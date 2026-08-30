@@ -8,10 +8,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, "../public");
 mkdirSync(publicDir, { recursive: true });
 
-// Shared medical-cross mark (viewBox 0 0 512 512)
-const CROSS = `M186 86
-  L326 86 L326 186 L426 186 L426 326 L326 326 L326 426
-  L186 426 L186 326 L86 326 L86 186 L186 186 Z`;
+// Shared medical-cross mark (viewBox 0 0 512 512).
+// Arms are thinner than the original (100 thick vs. 140) so the cross reads as
+// a slender plus instead of a bulky blob, while staying perfectly symmetric.
+const CROSS = `M206 86
+  L306 86 L306 206 L426 206 L426 306 L306 306 L306 426
+  L206 426 L206 306 L86 306 L86 206 L206 206 Z`;
 
 // App icon: white cross on a navy→blue gradient (full-bleed, good for maskable)
 const appSvg = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
