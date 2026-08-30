@@ -53,12 +53,12 @@ export function SkeletonTable({ rows = 5, cols = 4 }) {
   );
 }
 
-// A grid of card placeholders (matches .dentist-grid)
+// A grid of card placeholders (matches .doctor-grid)
 export function SkeletonCards({ count = 6 }) {
   return (
-    <div className="dentist-grid" style={{ marginTop: 16 }}>
+    <div className="doctor-grid" style={{ marginTop: 16 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <div className="dentist-card" key={i} style={{ cursor: "default" }}>
+        <div className="doctor-card" key={i} style={{ cursor: "default" }}>
           <Skeleton width="65%" height={18} />
           <Skeleton width="40%" height={12} style={{ marginTop: 4 }} />
           <Skeleton width="90%" height={12} style={{ marginTop: 10 }} />

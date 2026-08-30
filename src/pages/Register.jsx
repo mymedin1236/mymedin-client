@@ -23,7 +23,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     role: "client",
-    // dentist-only
+    // doctor-only
     clinicName: "",
     specialization: "",
     yearsOfExperience: "",
@@ -32,18 +32,18 @@ export default function Register() {
     companyName: "",
   });
   const [availability, setAvailability] = useState(DEFAULT_AVAILABILITY);
-  const [avatarUrl, setAvatarUrl] = useState(""); // dentist profile photo (Cloudinary URL)
+  const [avatarUrl, setAvatarUrl] = useState(""); // doctor profile photo (Cloudinary URL)
   const [coords, setCoords] = useState(null); // { latitude, longitude }
   const [locStatus, setLocStatus] = useState("");
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const isDentist = form.role === "dentist";
+  const isDoctor = form.role === "doctor";
   const isVendor = form.role === "vendor";
 
   const roleHome = (role) =>
-    role === "dentist" ? "/dentist" : role === "vendor" ? "/vendor" : "/client";
+    role === "doctor" ? "/doctor" : role === "vendor" ? "/vendor" : "/client";
 
   // Clear a field's error as soon as the user edits it
   const handleChange = (e) => {
@@ -81,7 +81,7 @@ export default function Register() {
     if (isVendor && !form.companyName.trim())
       e.companyName = "Company name is required.";
 
-    if (isDentist) {
+    if (isDoctor) {
       if (!form.clinicName.trim()) e.clinicName = "Clinic name is required.";
       if (!form.specialization.trim())
         e.specialization = "Specialization is required.";
@@ -135,7 +135,7 @@ export default function Register() {
         password: form.password,
         role: form.role,
       };
-      if (isDentist) {
+      if (isDoctor) {
         payload.clinicName = form.clinicName;
         payload.specialization = form.specialization;
         payload.yearsOfExperience = form.yearsOfExperience;
@@ -173,7 +173,7 @@ export default function Register() {
         {pendingAssoc && (
           <div className="info-banner">
             Create your patient account to connect with
-            {pendingAssoc.name ? ` Dr. ${pendingAssoc.name}` : " your selected dentist"}.
+            {pendingAssoc.name ? ` Dr. ${pendingAssoc.name}` : " your selected doctor"}.
           </div>
         )}
         {error && <div className="error">{error}</div>}
@@ -182,18 +182,18 @@ export default function Register() {
             I am a
             <select name="role" value={form.role} onChange={handleChange}>
               <option value="client">Patient</option>
-              <option value="dentist">Dentist</option>
+              <option value="doctor">Doctor</option>
               <option value="vendor">Vendor / Supplier</option>
             </select>
           </label>
         )}
-        {isDentist && (
+        {isDoctor && (
           <AvatarUpload
             value={avatarUrl}
             name={form.name}
             onChange={setAvatarUrl}
             centered
-            hint="Patients see this when finding a dentist."
+            hint="Patients see this when finding a doctor."
           />
         )}
         {isVendor && (
@@ -211,7 +211,7 @@ export default function Register() {
         )}
         <label>
           <span className="lbl">Full name <span className="req">*</span></span>
-          {isDentist ? (
+          {isDoctor ? (
             <span className={`input-prefix${errors.name ? " invalid" : ""}`}>
               <span className="prefix">Dr.</span>
               <input
@@ -229,7 +229,7 @@ export default function Register() {
               onChange={handleChange}
             />
           )}
-          {isDentist && (
+          {isDoctor && (
             <span className="muted" style={{ fontSize: 12 }}>
               "Dr." is added automatically — no need to type it.
             </span>
@@ -287,11 +287,11 @@ export default function Register() {
           )}
         </label>
 
-        {isDentist && (
+        {isDoctor && (
           <>
             <hr className="divider" />
             <p className="muted" style={{ margin: 0 }}>
-              Your public profile — patients see this when finding a dentist.
+              Your public profile — patients see this when finding a doctor.
             </p>
             <label>
               <span className="lbl">Clinic name <span className="req">*</span></span>
@@ -387,11 +387,11 @@ export default function Register() {
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
         <Link
-          to="/find-dentist"
+          to="/find-doctor"
           className="btn-secondary icon"
           style={{ textDecoration: "none", justifyContent: "center", width: "100%", borderColor: "var(--primary)", color: "var(--primary)" }}
         >
-          <Icon name="person_search" size={18} /> Find a dentist near you
+          <Icon name="person_search" size={18} /> Find a doctor near you
         </Link>
       </form>
     </div>

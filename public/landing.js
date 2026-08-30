@@ -7,8 +7,8 @@
     var user = JSON.parse(localStorage.getItem("user") || "null");
     if (token && user && user.role) {
       var home =
-        user.role === "dentist" || user.role === "assistant"
-          ? "/dentist"
+        user.role === "doctor" || user.role === "assistant"
+          ? "/doctor"
           : user.role === "vendor"
           ? "/vendor"
           : "/client";

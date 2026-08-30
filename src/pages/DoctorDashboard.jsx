@@ -61,7 +61,7 @@ const STATUS_ACTIONS = [
   { value: "scheduled", label: "Reopen", icon: "event_repeat" },
 ];
 
-export default function DentistDashboard() {
+export default function DoctorDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [appts, setAppts] = useState([]);
@@ -104,7 +104,7 @@ export default function DentistDashboard() {
   }, []);
 
   // Manual refresh — shows the loading skeleton (like a page reload) so the
-  // dentist clearly sees it refresh, then swaps in the fresh data.
+  // doctor clearly sees it refresh, then swaps in the fresh data.
   const refresh = () => {
     setLoading(true);
     load()
@@ -118,7 +118,7 @@ export default function DentistDashboard() {
       .finally(() => setLoading(false));
   }, [load]);
 
-  // Refresh when the tab regains focus (assistant/dentist may have changed things)
+  // Refresh when the tab regains focus (assistant/doctor may have changed things)
   useEffect(() => {
     const onFocus = () => load().catch(() => {});
     window.addEventListener("focus", onFocus);
@@ -127,7 +127,7 @@ export default function DentistDashboard() {
 
   // Live updates: refetch when a notification arrives (e.g. a patient marks
   // "on the way" / "arrived"), and poll every 15s as a fallback so the board
-  // stays current even while the dentist is watching it.
+  // stays current even while the doctor is watching it.
   useEffect(() => {
     load().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,7 +192,7 @@ export default function DentistDashboard() {
       trackAppointment("status_changed", {
         appointment_id: selected._id,
         status,
-        actor: "dentist",
+        actor: "doctor",
       });
       setSelected(data);
       await load();
@@ -228,7 +228,7 @@ export default function DentistDashboard() {
         status: "scheduled",
         version: selected.__v,
       });
-      trackAppointment("rescheduled", { appointment_id: selected._id, actor: "dentist" });
+      trackAppointment("rescheduled", { appointment_id: selected._id, actor: "doctor" });
       setSelected(data);
       setReschedOpen(false);
       await load();
@@ -244,7 +244,7 @@ export default function DentistDashboard() {
     }
   };
 
-  // Staff (dentist or assistant) can also mark a patient arrived — starts the
+  // Staff (doctor or assistant) can also mark a patient arrived — starts the
   // same waiting counter — or undo it. The patient can still do it themselves.
   const setArrival = async (status) => {
     if (!selected) return;
@@ -254,7 +254,7 @@ export default function DentistDashboard() {
       trackAppointment("arrival_updated", {
         appointment_id: selected._id,
         arrival_status: status,
-        actor: "dentist",
+        actor: "doctor",
       });
       setSelected(data);
       await load();
@@ -272,7 +272,7 @@ export default function DentistDashboard() {
       const { data } = await api.patch(`/appointments/${selected._id}/${action}`);
       trackAppointment(action === "confirm" ? "confirmed" : "declined", {
         appointment_id: selected._id,
-        actor: "dentist",
+        actor: "doctor",
       });
       setSelected(data);
       await load();
@@ -285,10 +285,10 @@ export default function DentistDashboard() {
     }
   };
 
-  const greeting = `Welcome, ${user.role === "dentist" ? "Dr. " : ""}${user.name}`;
+  const greeting = `Welcome, ${user.role === "doctor" ? "Dr. " : ""}${user.name}`;
 
   // Gentle reminder when the free discovery period is ending or has just ended
-  // (only the dentist's record carries the signed agreement).
+  // (only the doctor's record carries the signed agreement).
   let enrollReminder = null;
   if (user.agreement?.acceptedAt && !dismissEnroll) {
     const de = new Date(user.agreement.acceptedAt);

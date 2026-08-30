@@ -45,11 +45,11 @@ const clinicStatus = (availability) => {
 };
 
 // Patient "Home" tab. Three sections: (1) scheduled appointment, (2) payments /
-// outstanding balance, (3) review your dentist.
+// outstanding balance, (3) review your doctor.
 export default function ClientDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [assoc, setAssoc] = useState(null); // { dentist, pending }
+  const [assoc, setAssoc] = useState(null); // { doctor, pending }
   const [upcoming, setUpcoming] = useState([]);
   const [outstanding, setOutstanding] = useState(0);
   const [showLeave, setShowLeave] = useState(false);
@@ -57,7 +57,7 @@ export default function ClientDashboard() {
   const [leaveComment, setLeaveComment] = useState("");
   const [leaving, setLeaving] = useState(false);
   const [assocNotice, setAssocNotice] = useState("");
-  // Inline "review your dentist"
+  // Inline "review your doctor"
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -87,10 +87,10 @@ export default function ClientDashboard() {
           )
           .sort((a, b) => new Date(a.date) - new Date(b.date));
         // Defensive: collapse any accidental duplicate records for the same
-        // patient + dentist + slot so the same appointment never shows twice.
+        // patient + doctor + slot so the same appointment never shows twice.
         const seen = new Set();
         const deduped = list.filter((a) => {
-          const key = `${a.client?._id || a.client}|${a.dentist?._id || a.dentist}|${a.date}`;
+          const key = `${a.client?._id || a.client}|${a.doctor?._id || a.doctor}|${a.date}`;
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
@@ -129,10 +129,10 @@ export default function ClientDashboard() {
     }
     if (!pend?.id) return;
     api
-      .post("/associations/request", { dentistId: pend.id })
+      .post("/associations/request", { doctorId: pend.id })
       .then(() => {
         setAssocNotice(
-          `Request sent to Dr. ${pend.name || "your selected dentist"} — you'll be notified once they confirm.`
+          `Request sent to Dr. ${pend.name || "your selected doctor"} — you'll be notified once they confirm.`
         );
         loadAssoc();
         window.dispatchEvent(new Event("association-changed"));
@@ -162,16 +162,16 @@ export default function ClientDashboard() {
   };
 
   const submitReview = async () => {
-    if (!assoc?.dentist?._id) return;
+    if (!assoc?.doctor?._id) return;
     setReviewError("");
     setReviewSubmitting(true);
     try {
-      await api.post(`/dentists/${assoc.dentist._id}/reviews`, {
+      await api.post(`/doctors/${assoc.doctor._id}/reviews`, {
         rating: reviewRating,
         comment: reviewComment,
       });
       setEditingReview(false);
-      loadAssoc(); // refresh myReview + the dentist's average
+      loadAssoc(); // refresh myReview + the doctor's average
     } catch (err) {
       setReviewError(err.response?.data?.message || "Could not submit your review.");
     } finally {
@@ -202,19 +202,19 @@ export default function ClientDashboard() {
         {a.client && a.client._id !== user._id && (
           <span className="icon"><Icon name="child_care" size={16} /> For {a.client.name}</span>
         )}
-        <span className="icon"><Icon name="person" size={16} /> Dr. {a.dentist?.name}</span>
-        {a.dentist?.clinicName && (
-          <span className="icon"><Icon name="apartment" size={16} /> {a.dentist.clinicName}</span>
+        <span className="icon"><Icon name="person" size={16} /> Dr. {a.doctor?.name}</span>
+        {a.doctor?.clinicName && (
+          <span className="icon"><Icon name="apartment" size={16} /> {a.doctor.clinicName}</span>
         )}
         {a.reason && (
           <span className="icon"><Icon name="medical_services" size={16} /> {a.reason}</span>
         )}
       </div>
       <div className="appt-card-actions">
-        {a.dentist?.location?.coordinates?.length === 2 && (
+        {a.doctor?.location?.coordinates?.length === 2 && (
           <a
             className="btn-secondary icon"
-            href={`https://www.google.com/maps/dir/?api=1&destination=${a.dentist.location.coordinates[1]},${a.dentist.location.coordinates[0]}`}
+            href={`https://www.google.com/maps/dir/?api=1&destination=${a.doctor.location.coordinates[1]},${a.doctor.location.coordinates[0]}`}
             target="_blank"
             rel="noreferrer"
             style={{ textDecoration: "none", color: "var(--primary)" }}
@@ -292,29 +292,29 @@ export default function ClientDashboard() {
         )}
       </section>
 
-      {/* 3 — Review your dentist */}
+      {/* 3 — Review your doctor */}
       <section>
         <h2 className="icon" style={{ marginBottom: 8 }}>
-          <Icon name="reviews" /> Review your dentist
+          <Icon name="reviews" /> Review your doctor
         </h2>
         <div className="card" style={{ maxWidth: "none" }}>
           {assoc === null ? (
             <p className="muted" style={{ margin: 0 }}>Loading…</p>
-          ) : assoc.dentist ? (
+          ) : assoc.doctor ? (
             <>
               <div
-                onClick={() => navigate(`/dentists/${assoc.dentist._id}`)}
-                title="View dentist details"
+                onClick={() => navigate(`/doctors/${assoc.doctor._id}`)}
+                title="View doctor details"
                 style={{ display: "flex", gap: 12, alignItems: "center", cursor: "pointer" }}
               >
-                <Avatar src={assoc.dentist.image} name={assoc.dentist.name} size={56} />
+                <Avatar src={assoc.doctor.image} name={assoc.doctor.name} size={56} />
                 <div>
-                  <strong>Dr. {assoc.dentist.name}</strong>
-                  {assoc.dentist.clinicName && (
-                    <div className="muted" style={{ fontSize: 13 }}>{assoc.dentist.clinicName}</div>
+                  <strong>Dr. {assoc.doctor.name}</strong>
+                  {assoc.doctor.clinicName && (
+                    <div className="muted" style={{ fontSize: 13 }}>{assoc.doctor.clinicName}</div>
                   )}
                   {(() => {
-                    const st = clinicStatus(assoc.dentist.availability);
+                    const st = clinicStatus(assoc.doctor.availability);
                     return st ? (
                       <span className={`clinic-badge ${st.kind}`} style={{ marginTop: 4 }}>
                         <Icon name={st.icon} size={14} /> {st.text}
@@ -329,7 +329,7 @@ export default function ClientDashboard() {
               {assoc.myReview && !editingReview ? (
                 <>
                   <p className="icon" style={{ margin: 0, color: "#1a7f37" }}>
-                    <Icon name="check_circle" size={18} /> Thanks — you've reviewed this dentist.
+                    <Icon name="check_circle" size={18} /> Thanks — you've reviewed this doctor.
                   </p>
                   <div className="row gap" style={{ alignItems: "center", marginTop: 6 }}>
                     <StarRating value={assoc.myReview.rating} size={20} />
@@ -384,26 +384,26 @@ export default function ClientDashboard() {
               <hr className="divider" />
               <div className="row gap" style={{ flexWrap: "wrap" }}>
                 <Link
-                  to={`/dentists/${assoc.dentist._id}`}
+                  to={`/doctors/${assoc.doctor._id}`}
                   className="btn-secondary icon"
                   style={{ textDecoration: "none" }}
                 >
                   <Icon name="info" size={18} /> View details
                 </Link>
                 <button className="btn-secondary icon" onClick={() => setShowLeave(true)}>
-                  <Icon name="logout" size={18} /> Leave / switch dentist
+                  <Icon name="logout" size={18} /> Leave / switch doctor
                 </button>
               </div>
             </>
           ) : assoc.pending ? (
             <p className="muted" style={{ margin: 0 }}>
-              Request pending with Dr. {assoc.pending.dentist?.name}. You'll be notified once they respond.
+              Request pending with Dr. {assoc.pending.doctor?.name}. You'll be notified once they respond.
             </p>
           ) : (
             <div className="row gap" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
-              <span className="muted">You're not associated with a dentist yet.</span>
-              <Link to="/find-dentist" className="btn-secondary icon" style={{ textDecoration: "none" }}>
-                <Icon name="person_search" size={18} /> Find a dentist
+              <span className="muted">You're not associated with a doctor yet.</span>
+              <Link to="/find-doctor" className="btn-secondary icon" style={{ textDecoration: "none" }}>
+                <Icon name="person_search" size={18} /> Find a doctor
               </Link>
             </div>
           )}
@@ -413,7 +413,7 @@ export default function ClientDashboard() {
       {showLeave && (
         <div className="modal-backdrop" onClick={() => setShowLeave(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Leave Dr. {assoc?.dentist?.name}?</h3>
+            <h3>Leave Dr. {assoc?.doctor?.name}?</h3>
             <p className="muted" style={{ marginTop: 0 }}>
               Please rate your experience before you go.
             </p>

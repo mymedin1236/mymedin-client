@@ -150,9 +150,9 @@ export default function Marketplace() {
             ) : products.length === 0 ? (
               <p className="muted">No products match.</p>
             ) : (
-              <div className="dentist-grid">
+              <div className="doctor-grid">
                 {products.map((p) => (
-                  <div key={p._id} className="dentist-card" style={{ cursor: "default" }}>
+                  <div key={p._id} className="doctor-card" style={{ cursor: "default" }}>
                     <div className="row gap" style={{ justifyContent: "space-between" }}>
                       <strong>{p.name}</strong>
                     </div>

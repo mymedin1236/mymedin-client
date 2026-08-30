@@ -56,8 +56,8 @@ export default function Login() {
     try {
       const user = await login(form.identifier, form.password, remember);
       navigate(
-        user.role === "dentist"
-          ? "/dentist"
+        user.role === "doctor"
+          ? "/doctor"
           : user.role === "vendor"
           ? "/vendor"
           : "/client"
@@ -125,11 +125,11 @@ export default function Login() {
           No account? <Link to="/register">Register</Link>
         </p>
         <Link
-          to="/find-dentist"
+          to="/find-doctor"
           className="btn-secondary icon"
           style={{ textDecoration: "none", justifyContent: "center", width: "100%", borderColor: "var(--primary)", color: "var(--primary)" }}
         >
-          <Icon name="person_search" size={18} /> Find a dentist near you
+          <Icon name="person_search" size={18} /> Find a doctor near you
         </Link>
         {canInstall && (
           <button

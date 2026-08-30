@@ -15,7 +15,7 @@ const pad = (n) => String(n).padStart(2, "0");
 const dayStr = clinicDayStr;
 const todayStr = clinicToday;
 
-// Matches the day labels the dentist picks at sign up (Register WEEKDAYS).
+// Matches the day labels the doctor picks at sign up (Register WEEKDAYS).
 // JS getDay(): 0=Sun … 6=Sat.
 const JS_DAY_TO_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -40,12 +40,12 @@ const buildSlots = (startMin, endMin, stepMin) => {
 };
 
 // Interactive day + time-slot picker. `value` is an ISO datetime string (or "").
-// Slot hours come from the clinic's availability (set by the dentist at sign up);
+// Slot hours come from the clinic's availability (set by the doctor at sign up);
 // when none is configured, falls back to 9:00–6:00.
 //
 // Optional props:
-//  - dentistId: fetch a specific dentist's booked slots from the public endpoint
-//    (used on the public dentist profile) instead of the viewer's own clinic.
+//  - doctorId: fetch a specific doctor's booked slots from the public endpoint
+//    (used on the public doctor profile) instead of the viewer's own clinic.
 //  - availabilityOverride: use this availability array instead of the fetched one.
 //  - readOnly: display availability only — slots aren't selectable.
 export default function SlotPicker({
@@ -53,7 +53,7 @@ export default function SlotPicker({
   onChange,
   excludeId,
   stepMin = 15,
-  dentistId,
+  doctorId,
   availabilityOverride,
   readOnly = false,
   initialDay,
@@ -61,13 +61,13 @@ export default function SlotPicker({
 }) {
   const valueDate = value ? new Date(value) : null;
   // Pre-select a day (e.g. "Add" tapped on a day header) without picking a time,
-  // so the dentist still has to choose an actual slot.
+  // so the doctor still has to choose an actual slot.
   const [day, setDay] = useState(
     valueDate ? dayStr(valueDate) : initialDay || todayStr()
   );
   const [bookedISO, setBookedISO] = useState([]);
   const [fetchedAvailability, setFetchedAvailability] = useState([]);
-  // Slot length (minutes) as configured by the dentist; falls back to `stepMin`.
+  // Slot length (minutes) as configured by the doctor; falls back to `stepMin`.
   const [fetchedStep, setFetchedStep] = useState(null);
   // Per-date exceptions to the weekly hours (early leave / day off).
   const [dayOverrides, setDayOverrides] = useState([]);
@@ -84,7 +84,7 @@ export default function SlotPicker({
     // Fetch the booked appointments for the clinic-timezone day [00:00, next 00:00).
     const from = clinicToInstant(day, 0);
     const to = clinicToInstant(day, 24 * 60);
-    const endpoint = dentistId ? `/dentists/${dentistId}/booked` : "/appointments/booked";
+    const endpoint = doctorId ? `/doctors/${doctorId}/booked` : "/appointments/booked";
     let active = true;
     setLoading(true);
     setLoadError(false);
@@ -109,7 +109,7 @@ export default function SlotPicker({
     return () => {
       active = false;
     };
-  }, [day, excludeId, dentistId, reload]);
+  }, [day, excludeId, doctorId, reload]);
 
   const availability = availabilityOverride || fetchedAvailability;
   // Trust the fetched hours only when the request actually succeeded. When an
@@ -138,7 +138,7 @@ export default function SlotPicker({
 
   const isClosed = Array.isArray(windows) && windows.length === 0;
 
-  // Prefer the dentist's configured slot length; fall back to the prop default.
+  // Prefer the doctor's configured slot length; fall back to the prop default.
   const effectiveStep = fetchedStep || stepMin;
   const slots = useMemo(() => {
     if (!windows || windows.length === 0) return [];

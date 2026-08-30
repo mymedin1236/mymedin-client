@@ -30,7 +30,7 @@ const routeFor = (n) => {
     case "appointment_declined":
       return "/client";
     case "association_rejected":
-      return "/find-dentist";
+      return "/find-doctor";
     default:
       return n.data?.url || "/";
   }

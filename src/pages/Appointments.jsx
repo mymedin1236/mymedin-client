@@ -74,7 +74,7 @@ export default function Appointments() {
     };
   }, []);
 
-  // Poll periodically so the dentist and assistant see each other's changes
+  // Poll periodically so the doctor and assistant see each other's changes
   // (e.g. a slot booked moments ago) without needing a manual refresh.
   useEffect(() => {
     const id = setInterval(loadAppointments, 25000);
@@ -109,7 +109,7 @@ export default function Appointments() {
   };
 
   // Open the create form with an exact slot pre-selected (day + time), e.g. when
-  // an available slot is tapped on the dentist's Today's schedule.
+  // an available slot is tapped on the doctor's Today's schedule.
   const openCreateAt = (iso) => {
     const day = iso ? iso.slice(0, 10) : "";
     setForm({ ...empty, date: iso });
@@ -148,11 +148,11 @@ export default function Appointments() {
       const payload = { ...form };
       if (editingId) {
         await api.put(`/appointments/${editingId}`, payload);
-        trackAppointment("updated", { appointment_id: editingId, actor: "dentist" });
+        trackAppointment("updated", { appointment_id: editingId, actor: "doctor" });
         resetForm();
       } else {
         const { data } = await api.post("/appointments", payload);
-        trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "dentist" });
+        trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "doctor" });
         resetForm();
         setScheduled(data);
       }
@@ -160,7 +160,7 @@ export default function Appointments() {
     } catch (err) {
       setError(err.response?.data?.message || "Save failed");
       // On a conflict (slot taken or record changed by someone else), pull the
-      // latest so the dentist/assistant sees the current state before retrying.
+      // latest so the doctor/assistant sees the current state before retrying.
       if (err.response?.status === 409) loadAppointments();
     } finally {
       setSaving(false);
@@ -183,7 +183,7 @@ export default function Appointments() {
   const handleDelete = async (id) => {
     if (!confirm("Delete this appointment?")) return;
     await api.delete(`/appointments/${id}`);
-    trackAppointment("deleted", { appointment_id: id, actor: "dentist" });
+    trackAppointment("deleted", { appointment_id: id, actor: "doctor" });
     load();
   };
 
@@ -192,7 +192,7 @@ export default function Appointments() {
       await api.patch(`/appointments/${id}/${action}`);
       trackAppointment(action === "confirm" ? "confirmed" : "declined", {
         appointment_id: id,
-        actor: "dentist",
+        actor: "doctor",
       });
       await loadAppointments();
       refreshNotifications();

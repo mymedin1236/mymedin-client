@@ -235,9 +235,9 @@ export default function VendorDashboard() {
               <div key={o._id} className="card">
                 <div className="row gap" style={{ justifyContent: "space-between" }}>
                   <div>
-                    <strong>Dr. {o.dentist?.name}</strong>
-                    {o.dentist?.clinicName && (
-                      <span className="muted"> · {o.dentist.clinicName}</span>
+                    <strong>Dr. {o.doctor?.name}</strong>
+                    {o.doctor?.clinicName && (
+                      <span className="muted"> · {o.doctor.clinicName}</span>
                     )}
                     <div className="muted" style={{ fontSize: 13 }}>
                       {formatDateTime(o.createdAt)}

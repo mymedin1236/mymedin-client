@@ -54,8 +54,8 @@ export const trackPayment = (action, props) => track("Payment", { action, ...pro
 // action: "reported" | "resolved"
 export const trackFollowUp = (action, props) => track("Follow-up", { action, ...props });
 
-export const trackDentistAssociationRequested = (dentistId) =>
-  track("Dentist Association Requested", { dentist_id: dentistId });
+export const trackDoctorAssociationRequested = (doctorId) =>
+  track("Doctor Association Requested", { doctor_id: doctorId });
 
 export const trackNotificationViewed = (type) =>
   track("Notification Viewed", { notification_type: type });

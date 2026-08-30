@@ -5,11 +5,11 @@ import Icon from "./Icon";
 import { trackTabViewed } from "../utils/analytics";
 
 // Bottom tab bar shown on mobile to switch between sections. When the links
-// overflow (e.g. the dentist has many), the bar scrolls horizontally and shows
+// overflow (e.g. the doctor has many), the bar scrolls horizontally and shows
 // a right-edge chevron; tapping it nudges the bar along. Scroll is contained so
 // swiping the bar never triggers the browser's back/forward gesture.
-export default function MobileNav({ role, myDentistId }) {
-  const links = decorateClientLinks(ROLE_LINKS[role] || [], myDentistId);
+export default function MobileNav({ role, myDoctorId }) {
+  const links = decorateClientLinks(ROLE_LINKS[role] || [], myDoctorId);
   const scrollRef = useRef(null);
   const [less, setLess] = useState(false); // more tabs to the left
   const [more, setMore] = useState(false); // more tabs to the right
@@ -31,7 +31,7 @@ export default function MobileNav({ role, myDentistId }) {
       el.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [links.length, myDentistId]);
+  }, [links.length, myDoctorId]);
 
   const nudge = (dir) => scrollRef.current?.scrollBy({ left: dir * 130, behavior: "smooth" });
 

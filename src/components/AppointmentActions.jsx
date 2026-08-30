@@ -164,7 +164,7 @@ export default function AppointmentActions({ appointment, onChanged }) {
                 </button>
               </div>
               <p className="muted" style={{ margin: 0 }}>
-                {a.reason ? `${a.reason} — ` : ""}with Dr. {a.dentist?.name} — currently {formatDateTime(a.date)}
+                {a.reason ? `${a.reason} — ` : ""}with Dr. {a.doctor?.name} — currently {formatDateTime(a.date)}
               </p>
               {err && <div className="error">{err}</div>}
               <SlotPicker value={reschedDate} excludeId={a._id} onChange={(iso) => setReschedDate(iso)} />

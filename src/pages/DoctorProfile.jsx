@@ -6,7 +6,7 @@ import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import StarRating from "../components/StarRating";
 import PublicTopbar from "../components/PublicTopbar";
-import { trackDentistAssociationRequested } from "../utils/analytics";
+import { trackDoctorAssociationRequested } from "../utils/analytics";
 
 // "17:00" -> "5:00 PM" (or unchanged when show24).
 const fmtTime = (hhmm, show24) => {
@@ -16,11 +16,11 @@ const fmtTime = (hhmm, show24) => {
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${ap}`;
 };
 
-export default function DentistProfile() {
+export default function DoctorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [dentist, setDentist] = useState(null);
+  const [doctor, setDoctor] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -33,7 +33,7 @@ export default function DentistProfile() {
   const [reviewError, setReviewError] = useState("");
 
   // Association (clients only)
-  const [assoc, setAssoc] = useState(null); // { dentist, pending }
+  const [assoc, setAssoc] = useState(null); // { doctor, pending }
   const [assocMsg, setAssocMsg] = useState("");
   const [requesting, setRequesting] = useState(false);
 
@@ -41,8 +41,8 @@ export default function DentistProfile() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/dentists/${id}`);
-        setDentist(data.dentist);
+        const { data } = await api.get(`/doctors/${id}`);
+        setDoctor(data.doctor);
         setReviews(data.reviews);
       } catch (err) {
         if (err.response?.status === 404) setNotFound(true);
@@ -61,7 +61,7 @@ export default function DentistProfile() {
 
   // Logged-out visitor chose this clinic: remember it, then send them to sign up.
   const startAssociate = () => {
-    sessionStorage.setItem("pendingAssociation", JSON.stringify({ id, name: dentist?.name || "" }));
+    sessionStorage.setItem("pendingAssociation", JSON.stringify({ id, name: doctor?.name || "" }));
     navigate("/register");
   };
 
@@ -69,10 +69,10 @@ export default function DentistProfile() {
     setAssocMsg("");
     setRequesting(true);
     try {
-      await api.post("/associations/request", { dentistId: id });
-      trackDentistAssociationRequested(id);
-      setAssoc((a) => ({ ...(a || {}), pending: { dentist: { _id: id, name: dentist.name } } }));
-      setAssocMsg("Request sent — the dentist will be notified.");
+      await api.post("/associations/request", { doctorId: id });
+      trackDoctorAssociationRequested(id);
+      setAssoc((a) => ({ ...(a || {}), pending: { doctor: { _id: id, name: doctor.name } } }));
+      setAssocMsg("Request sent — the doctor will be notified.");
     } catch (err) {
       setAssocMsg(err.response?.data?.message || "Could not send request.");
     } finally {
@@ -89,11 +89,11 @@ export default function DentistProfile() {
     }
     setSubmitting(true);
     try {
-      const { data } = await api.post(`/dentists/${id}/reviews`, {
+      const { data } = await api.post(`/doctors/${id}/reviews`, {
         rating: myRating,
         comment,
       });
-      setDentist(data.dentist);
+      setDoctor(data.doctor);
       setReviews(data.reviews);
       setComment("");
     } catch (err) {
@@ -104,7 +104,7 @@ export default function DentistProfile() {
   };
 
   if (loading) return <div className="page"><p className="muted">Loading…</p></div>;
-  if (notFound) return <div className="page"><p className="muted">Dentist not found.</p></div>;
+  if (notFound) return <div className="page"><p className="muted">Doctor not found.</p></div>;
 
   return (
     <>
@@ -123,42 +123,42 @@ export default function DentistProfile() {
             gap: 10,
           }}
         >
-          <Avatar src={dentist.image} name={dentist.name} size={88} />
+          <Avatar src={doctor.image} name={doctor.name} size={88} />
           <div>
             <h1 style={{ margin: 0, fontSize: "clamp(1.3rem, 5vw, 1.8rem)", lineHeight: 1.15 }}>
-              Dr. {dentist.name}
+              Dr. {doctor.name}
             </h1>
-            {dentist.clinicName && <div className="muted">{dentist.clinicName}</div>}
+            {doctor.clinicName && <div className="muted">{doctor.clinicName}</div>}
           </div>
           <div>
-            <StarRating value={dentist.rating} size={20} />
+            <StarRating value={doctor.rating} size={20} />
             <div className="muted">
-              {dentist.rating ? dentist.rating.toFixed(1) : "No ratings yet"}
-              {dentist.reviewCount ? ` · ${dentist.reviewCount} reviews` : ""}
+              {doctor.rating ? doctor.rating.toFixed(1) : "No ratings yet"}
+              {doctor.reviewCount ? ` · ${doctor.reviewCount} reviews` : ""}
             </div>
           </div>
         </div>
 
         <div className="row gap" style={{ flexWrap: "wrap", marginTop: 8 }}>
-          {dentist.specialization && (
+          {doctor.specialization && (
             <span className="tag icon">
-              <Icon name="medical_services" size={16} /> {dentist.specialization}
+              <Icon name="medical_services" size={16} /> {doctor.specialization}
             </span>
           )}
-          {dentist.yearsOfExperience != null && (
+          {doctor.yearsOfExperience != null && (
             <span className="tag icon">
-              <Icon name="workspace_premium" size={16} /> {dentist.yearsOfExperience} yrs
+              <Icon name="workspace_premium" size={16} /> {doctor.yearsOfExperience} yrs
             </span>
           )}
-          {dentist.bookedCount > 0 && (
+          {doctor.bookedCount > 0 && (
             <span className="tag icon">
-              <Icon name="event_available" size={16} /> {dentist.bookedCount} appointment{dentist.bookedCount === 1 ? "" : "s"} booked
+              <Icon name="event_available" size={16} /> {doctor.bookedCount} appointment{doctor.bookedCount === 1 ? "" : "s"} booked
             </span>
           )}
-          {dentist.createdAt && (
+          {doctor.createdAt && (
             <span className="tag icon">
               <Icon name="calendar_month" size={16} /> Member since{" "}
-              {new Date(dentist.createdAt).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+              {new Date(doctor.createdAt).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
             </span>
           )}
         </div>
@@ -176,10 +176,10 @@ export default function DentistProfile() {
 
         {user?.role === "client" && (
           <div className="assoc-bar">
-            {assoc?.dentist?._id === id ? (
-              <span className="badge icon"><Icon name="verified" size={16} /> You're associated with this dentist</span>
-            ) : assoc?.dentist ? (
-              <span className="muted">You're already with Dr. {assoc.dentist.name}. Leave them first to switch.</span>
+            {assoc?.doctor?._id === id ? (
+              <span className="badge icon"><Icon name="verified" size={16} /> You're associated with this doctor</span>
+            ) : assoc?.doctor ? (
+              <span className="muted">You're already with Dr. {assoc.doctor.name}. Leave them first to switch.</span>
             ) : assoc?.pending ? (
               <span className="badge-pending">Request pending…</span>
             ) : (
@@ -191,15 +191,15 @@ export default function DentistProfile() {
           </div>
         )}
 
-        {dentist.about && (
+        {doctor.about && (
           <>
             <hr className="divider" />
             <h3>About</h3>
-            <p>{dentist.about}</p>
+            <p>{doctor.about}</p>
           </>
         )}
 
-        {dentist.availability?.length > 0 && (
+        {doctor.availability?.length > 0 && (
           <>
             <hr className="divider" />
             <div className="row gap" style={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
@@ -209,7 +209,7 @@ export default function DentistProfile() {
               </button>
             </div>
             <div className="row gap" style={{ flexWrap: "wrap", marginTop: 8 }}>
-              {dentist.availability.map((slot, i) => (
+              {doctor.availability.map((slot, i) => (
                 <span key={i} className="tag">
                   {slot.day} {fmtTime(slot.start, show24)}–{fmtTime(slot.end, show24)}
                 </span>
@@ -219,13 +219,13 @@ export default function DentistProfile() {
         )}
       </div>
 
-      {/* Leave a review — only patients associated with this dentist */}
-      {user?.role === "client" && assoc?.dentist?._id !== id && (
+      {/* Leave a review — only patients associated with this doctor */}
+      {user?.role === "client" && assoc?.doctor?._id !== id && (
         <p className="muted" style={{ marginTop: 12 }}>
-          You can leave a review once Dr. {dentist.name} approves your association.
+          You can leave a review once Dr. {doctor.name} approves your association.
         </p>
       )}
-      {user?.role === "client" && assoc?.dentist?._id === id && (
+      {user?.role === "client" && assoc?.doctor?._id === id && (
         <form className="card" onSubmit={submitReview}>
           <h3 className="icon"><Icon name="rate_review" size={18} /> Leave a review</h3>
           {reviewError && <div className="error">{reviewError}</div>}

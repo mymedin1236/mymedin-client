@@ -8,10 +8,10 @@ import { normalizePkPhone } from "../utils/phone";
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
-  const isDentist = user.role === "dentist";
+  const isDoctor = user.role === "doctor";
   const isAssistant = user.role === "assistant";
   const isVendor = user.role === "vendor";
-  const canPhoto = isDentist || isAssistant;
+  const canPhoto = isDoctor || isAssistant;
 
   const [form, setForm] = useState({
     name: user.name || "",
@@ -22,7 +22,7 @@ export default function Profile() {
     address: user.address || "",
     // vendor
     companyName: user.companyName || "",
-    // dentist
+    // doctor
     clinicName: user.clinicName || "",
     specialization: user.specialization || "",
     yearsOfExperience: user.yearsOfExperience ?? "",
@@ -76,7 +76,7 @@ export default function Profile() {
         payload.address = form.address;
       }
       if (isVendor) payload.companyName = form.companyName;
-      if (isDentist) {
+      if (isDoctor) {
         payload.clinicName = form.clinicName;
         payload.specialization = form.specialization;
         payload.yearsOfExperience = form.yearsOfExperience;
@@ -109,14 +109,14 @@ export default function Profile() {
             name={form.name}
             onChange={setAvatarUrl}
             centered
-            hint={isDentist ? "Patients see this when finding a dentist." : ""}
+            hint={isDoctor ? "Patients see this when finding a doctor." : ""}
           />
         )}
 
         <div className="grid-2">
           <label>
             Full name
-            {isDentist ? (
+            {isDoctor ? (
               <span className="input-prefix">
                 <span className="prefix">Dr.</span>
                 <input name="name" required value={form.name} onChange={handleChange} />
@@ -124,7 +124,7 @@ export default function Profile() {
             ) : (
               <input name="name" required value={form.name} onChange={handleChange} />
             )}
-            {isDentist && (
+            {isDoctor && (
               <span className="muted" style={{ fontSize: 12 }}>"Dr." is added automatically.</span>
             )}
           </label>
@@ -174,10 +174,10 @@ export default function Profile() {
           </label>
         )}
 
-        {isDentist && (
+        {isDoctor && (
           <>
             <hr className="divider" />
-            <h3 className="icon"><Icon name="medical_information" size={18} /> Dentist profile</h3>
+            <h3 className="icon"><Icon name="medical_information" size={18} /> Doctor profile</h3>
             <label>
               Clinic name
               <input name="clinicName" value={form.clinicName} onChange={handleChange} />

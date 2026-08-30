@@ -1,4 +1,4 @@
-// Helpers for reconciling booked appointments against a dentist's weekly hours.
+// Helpers for reconciling booked appointments against a doctor's weekly hours.
 // Day labels match AvailabilityEditor ("Mon".."Sun"), indexed here by JS getDay().
 export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -26,7 +26,7 @@ export function isOutsideHours(date, availability) {
 }
 
 // Future, still-active appointments that would fall outside the given hours —
-// e.g. after a dentist shortens/changes their availability.
+// e.g. after a doctor shortens/changes their availability.
 export function findAvailabilityConflicts(appointments, availability, now = new Date()) {
   return (appointments || [])
     .filter((a) => a.status === "scheduled" || a.status === "pending")

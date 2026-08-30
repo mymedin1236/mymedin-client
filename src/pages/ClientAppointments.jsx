@@ -65,7 +65,7 @@ export default function ClientAppointments() {
     setReqBusy(true);
     try {
       await api.post("/appointments/request", { date: reqDate, reason: reqReason, for: reqFor || undefined });
-      trackAppointment("requested", { dentist_id: assoc?.dentist?._id });
+      trackAppointment("requested", { doctor_id: assoc?.doctor?._id });
       setShowRequest(false);
       setReqSent(true);
       await loadAppointments();
@@ -92,7 +92,7 @@ export default function ClientAppointments() {
     <div className="page">
       <div className="page-head">
         <h1 className="icon"><Icon name="calendar_month" /> My appointments</h1>
-        {assoc?.dentist &&
+        {assoc?.doctor &&
           (hideRequest ? (
             <span className="muted icon" style={{ fontSize: 14 }}>
               <Icon name="event_available" size={18} /> Appointment already scheduled
@@ -107,7 +107,7 @@ export default function ClientAppointments() {
       {reqSent && (
         <div className="card" style={{ maxWidth: "none", borderColor: "var(--primary)" }}>
           <p className="icon" style={{ margin: 0 }}>
-            <Icon name="schedule_send" size={18} /> Request sent — you'll be notified once your dentist confirms.
+            <Icon name="schedule_send" size={18} /> Request sent — you'll be notified once your doctor confirms.
           </p>
         </div>
       )}
@@ -132,7 +132,7 @@ export default function ClientAppointments() {
                   {a.client && a.client._id !== user._id && (
                     <span className="icon"><Icon name="child_care" size={16} /> For {a.client.name}</span>
                   )}
-                  <span className="icon"><Icon name="person" size={16} /> Dr. {a.dentist?.name}</span>
+                  <span className="icon"><Icon name="person" size={16} /> Dr. {a.doctor?.name}</span>
                   {a.reason && (
                     <span className="icon"><Icon name="medical_services" size={16} /> {a.reason}</span>
                   )}
@@ -156,7 +156,7 @@ export default function ClientAppointments() {
                 </button>
               </div>
               <p className="muted" style={{ margin: 0 }}>
-                Pick an available slot with Dr. {assoc?.dentist?.name}. They'll confirm your request.
+                Pick an available slot with Dr. {assoc?.doctor?.name}. They'll confirm your request.
               </p>
               {reqError && <div className="error">{reqError}</div>}
               {deps.length > 0 && (

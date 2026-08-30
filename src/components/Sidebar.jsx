@@ -4,11 +4,11 @@ import { ROLE_LINKS, decorateClientLinks } from "../navLinks";
 import Icon from "./Icon";
 import { trackTabViewed } from "../utils/analytics";
 
-export default function Sidebar({ open, onNavigate, myDentistId }) {
+export default function Sidebar({ open, onNavigate, myDoctorId }) {
   const { user } = useAuth();
   if (!user) return null;
 
-  const links = decorateClientLinks(ROLE_LINKS[user.role] || [], myDentistId);
+  const links = decorateClientLinks(ROLE_LINKS[user.role] || [], myDoctorId);
 
   return (
     <aside className={`sidebar ${open ? "open" : ""}`}>

@@ -13,7 +13,7 @@ const BANK = {
   account: "04810010078559090018",
 };
 
-// The account number: blue, underlined, one-tap copy — so the dentist can paste
+// The account number: blue, underlined, one-tap copy — so the doctor can paste
 // it straight into their banking app.
 function AccountNumber({ value }) {
   const [copied, setCopied] = useState(false);

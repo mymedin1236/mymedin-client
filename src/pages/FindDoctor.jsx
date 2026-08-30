@@ -8,18 +8,18 @@ import StarRating from "../components/StarRating";
 import PublicTopbar from "../components/PublicTopbar";
 import { SkeletonCards } from "../components/Skeleton";
 
-export default function FindDentist() {
+export default function FindDoctor() {
   const { user } = useAuth();
-  const [dentists, setDentists] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [locStatus, setLocStatus] = useState("Finding dentists near you…");
+  const [locStatus, setLocStatus] = useState("Finding doctors near you…");
 
   const load = async (lat, lng) => {
     setLoading(true);
     try {
       const params = lat != null && lng != null ? { lat, lng } : {};
-      const { data } = await api.get("/dentists", { params });
-      setDentists(data);
+      const { data } = await api.get("/doctors", { params });
+      setDoctors(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -29,9 +29,9 @@ export default function FindDentist() {
 
   // Re-detect location and reload the list (used on mount and by the Refresh button).
   const locate = () => {
-    setLocStatus("Finding dentists near you…");
+    setLocStatus("Finding doctors near you…");
     if (!navigator.geolocation) {
-      setLocStatus("Location unavailable — showing top-rated dentists.");
+      setLocStatus("Location unavailable — showing top-rated doctors.");
       load();
       return;
     }
@@ -41,7 +41,7 @@ export default function FindDentist() {
         load(pos.coords.latitude, pos.coords.longitude);
       },
       () => {
-        setLocStatus("Location denied — showing top-rated dentists.");
+        setLocStatus("Location denied — showing top-rated doctors.");
         load();
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -59,7 +59,7 @@ export default function FindDentist() {
       <div className="page">
       <div className="page-head">
         <h1 className="icon">
-          <Icon name="person_search" /> Find a dentist
+          <Icon name="person_search" /> Find a doctor
         </h1>
         <button className="btn-secondary icon" onClick={locate} disabled={loading}>
           <Icon name="refresh" size={18} /> Refresh
@@ -74,12 +74,12 @@ export default function FindDentist() {
 
       {loading ? (
         <SkeletonCards count={6} />
-      ) : dentists.length === 0 ? (
-        <p className="muted">No dentists registered yet.</p>
+      ) : doctors.length === 0 ? (
+        <p className="muted">No doctors registered yet.</p>
       ) : (
-        <div className="dentist-grid">
-          {dentists.map((d) => (
-            <div key={d._id} className="dentist-card">
+        <div className="doctor-grid">
+          {doctors.map((d) => (
+            <div key={d._id} className="doctor-card">
               <div className="row gap" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div className="row gap" style={{ alignItems: "center" }}>
                   <Avatar src={d.image} name={d.name} size={52} />
@@ -112,7 +112,7 @@ export default function FindDentist() {
               )}
               {d.about && <p className="clamp-2">{d.about}</p>}
               <Link
-                to={`/dentists/${d._id}`}
+                to={`/doctors/${d._id}`}
                 className="btn-secondary icon"
                 style={{ textDecoration: "none", marginTop: "auto" }}
               >

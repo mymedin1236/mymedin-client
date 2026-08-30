@@ -146,7 +146,7 @@ export default function ClientLedger() {
         notes: apptForm.notes,
         date: apptForm.date, // already an ISO instant from the slot picker
       });
-      trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "dentist" });
+      trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "doctor" });
       setShowAppt(false);
       setApptShare(data);
     } catch (err) {

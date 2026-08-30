@@ -16,7 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import DentistDashboard from "./pages/DentistDashboard";
+import DoctorDashboard from "./pages/DoctorDashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import ClientAppointments from "./pages/ClientAppointments";
 import ClientTreatments from "./pages/ClientTreatments";
@@ -26,8 +26,8 @@ import Staff from "./pages/Staff";
 import ClientLedger from "./pages/ClientLedger";
 import Appointments from "./pages/Appointments";
 import Treatments from "./pages/Treatments";
-import FindDentist from "./pages/FindDentist";
-import DentistProfile from "./pages/DentistProfile";
+import FindDoctor from "./pages/FindDoctor";
+import DoctorProfile from "./pages/DoctorProfile";
 import VendorDashboard from "./pages/VendorDashboard";
 import Marketplace from "./pages/Marketplace";
 import Finances from "./pages/Finances";
@@ -44,8 +44,8 @@ function Home() {
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
   const home =
-    user.role === "dentist" || user.role === "assistant"
-      ? "/dentist"
+    user.role === "doctor" || user.role === "assistant"
+      ? "/doctor"
       : user.role === "vendor"
       ? "/vendor"
       : "/client";
@@ -57,22 +57,22 @@ function Home() {
 function Shell({ children }) {
   const { user } = useAuth();
   const { items } = useNotifications();
-  // For patients: know their associated dentist so the "Find a dentist" tab
-  // becomes "My dentist" pointing to that dentist's profile.
-  const [myDentistId, setMyDentistId] = useState(null);
+  // For patients: know their associated doctor so the "Find a doctor" tab
+  // becomes "My doctor" pointing to that doctor's profile.
+  const [myDoctorId, setMyDoctorId] = useState(null);
 
   useEffect(() => {
     if (user?.role !== "client") {
-      setMyDentistId(null);
+      setMyDoctorId(null);
       return;
     }
     const refresh = () =>
       api
         .get("/associations/me", { skipLoader: true })
-        .then((r) => setMyDentistId(r.data?.dentist?._id || null))
+        .then((r) => setMyDoctorId(r.data?.doctor?._id || null))
         .catch(() => {});
     refresh();
-    // Update instantly when the association changes — a dentist approval/decline
+    // Update instantly when the association changes — a doctor approval/decline
     // arrives as a notification, and the patient's own leave/request fires an event.
     window.addEventListener("association-changed", refresh);
     return () => window.removeEventListener("association-changed", refresh);
@@ -82,7 +82,7 @@ function Shell({ children }) {
 
   return (
     <div className="app-shell">
-      <Sidebar myDentistId={myDentistId} />
+      <Sidebar myDoctorId={myDoctorId} />
       <div className="app-main">
         <ImpersonationBanner />
         <header className="topbar">
@@ -96,7 +96,7 @@ function Shell({ children }) {
         </header>
         {children}
       </div>
-      <MobileNav role={user.role} myDentistId={myDentistId} />
+      <MobileNav role={user.role} myDoctorId={myDoctorId} />
     </div>
   );
 }
@@ -115,10 +115,10 @@ export default function App() {
         <Route path="/impersonate" element={<Impersonate />} />
         <Route path="/" element={<Home />} />
         <Route
-          path="/dentist"
+          path="/doctor"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
-              <DentistDashboard />
+            <ProtectedRoute role={["doctor", "assistant"]}>
+              <DoctorDashboard />
             </ProtectedRoute>
           }
         />
@@ -157,7 +157,7 @@ export default function App() {
         <Route
           path="/clients"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
+            <ProtectedRoute role={["doctor", "assistant"]}>
               <Clients key="patients" />
             </ProtectedRoute>
           }
@@ -165,7 +165,7 @@ export default function App() {
         <Route
           path="/dependents"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
+            <ProtectedRoute role={["doctor", "assistant"]}>
               <Clients key="dependents" mode="dependents" />
             </ProtectedRoute>
           }
@@ -173,7 +173,7 @@ export default function App() {
         <Route
           path="/clients/:id"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
+            <ProtectedRoute role={["doctor", "assistant"]}>
               <ClientLedger />
             </ProtectedRoute>
           }
@@ -181,7 +181,7 @@ export default function App() {
         <Route
           path="/staff"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Staff />
             </ProtectedRoute>
           }
@@ -189,7 +189,7 @@ export default function App() {
         <Route
           path="/appointments"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
+            <ProtectedRoute role={["doctor", "assistant"]}>
               <Appointments />
             </ProtectedRoute>
           }
@@ -197,14 +197,14 @@ export default function App() {
         <Route
           path="/treatments"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Treatments />
             </ProtectedRoute>
           }
         />
-        {/* Public discovery: anyone can browse dentists before signing in */}
-        <Route path="/find-dentist" element={<FindDentist />} />
-        <Route path="/dentists/:id" element={<DentistProfile />} />
+        {/* Public discovery: anyone can browse doctors before signing in */}
+        <Route path="/find-doctor" element={<FindDoctor />} />
+        <Route path="/doctors/:id" element={<DoctorProfile />} />
         <Route
           path="/profile"
           element={
@@ -216,7 +216,7 @@ export default function App() {
         <Route
           path="/settings"
           element={
-            <ProtectedRoute role={["dentist", "assistant"]}>
+            <ProtectedRoute role={["doctor", "assistant"]}>
               <Settings />
             </ProtectedRoute>
           }
@@ -224,7 +224,7 @@ export default function App() {
         <Route
           path="/agreement"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Agreement />
             </ProtectedRoute>
           }
@@ -240,7 +240,7 @@ export default function App() {
         <Route
           path="/supplies"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Marketplace />
             </ProtectedRoute>
           }
@@ -248,7 +248,7 @@ export default function App() {
         <Route
           path="/finances"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Finances />
             </ProtectedRoute>
           }
@@ -256,7 +256,7 @@ export default function App() {
         <Route
           path="/expenses"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Maintenance />
             </ProtectedRoute>
           }
@@ -264,7 +264,7 @@ export default function App() {
         <Route
           path="/invoices"
           element={
-            <ProtectedRoute role="dentist">
+            <ProtectedRoute role="doctor">
               <Invoices />
             </ProtectedRoute>
           }

@@ -9,7 +9,7 @@ import PasswordInput from "../components/PasswordInput";
 import { useNotifications } from "../context/NotificationsContext";
 
 // Build a WhatsApp click-to-chat URL: local number -> international, message prefilled.
-// Opens the dentist's own WhatsApp (app on phone / WhatsApp Web on desktop).
+// Opens the doctor's own WhatsApp (app on phone / WhatsApp Web on desktop).
 const waChatUrl = (phone, text) => {
   let d = String(phone || "").replace(/\D/g, "");
   if (d.startsWith("00")) d = d.slice(2);
@@ -18,7 +18,7 @@ const waChatUrl = (phone, text) => {
   return `https://wa.me/${d}?text=${encodeURIComponent(text)}`;
 };
 
-// New patients get a default password the dentist can share; they change it later.
+// New patients get a default password the doctor can share; they change it later.
 const DEFAULT_PASSWORD = "123456789";
 const empty = {
   name: "",
@@ -79,7 +79,7 @@ export default function Clients({ mode = "patients" }) {
   const [resetResult, setResetResult] = useState(null); // { shareMessage } after reset
   const [resetCopied, setResetCopied] = useState(false);
 
-  // WhatsApp message flow — opens the dentist's own WhatsApp (click-to-chat)
+  // WhatsApp message flow — opens the doctor's own WhatsApp (click-to-chat)
   const [msgTarget, setMsgTarget] = useState(null); // the patient being messaged
   const [msgText, setMsgText] = useState("");
   const [msgError, setMsgError] = useState("");

@@ -37,7 +37,7 @@ export default function Settings() {
   const [savingSection, setSavingSection] = useState(null); // which section is saving
   const [savedFlash, setSavedFlash] = useState(null); // section that just saved (brief ✓)
 
-  // Load the clinic's current settings (works for both dentist and assistant).
+  // Load the clinic's current settings (works for both doctor and assistant).
   useEffect(() => {
     let active = true;
     api
@@ -80,14 +80,14 @@ export default function Settings() {
   };
 
   // Save one section: PUT only its field(s); on success, update that section's
-  // baseline and keep the dentist's own session in sync.
+  // baseline and keep the doctor's own session in sync.
   const putSection = async (section, payload, onSaved) => {
     setError("");
     setSavingSection(section);
     try {
       const { data } = await api.put("/auth/clinic-settings", payload);
       onSaved(data);
-      if (user.role === "dentist") {
+      if (user.role === "doctor") {
         updateUser({
           ...user,
           availability: data.availability,
@@ -219,7 +219,7 @@ export default function Settings() {
       <div className="card">
         <h3 className="icon"><Icon name="location_on" size={18} /> Clinic location</h3>
         <p className="muted" style={{ marginTop: 0 }}>
-          Used to show your clinic to nearby patients on "Find a dentist".
+          Used to show your clinic to nearby patients on "Find a doctor".
           Stand at your clinic and tap below to set it.
         </p>
         <button type="button" className="btn-secondary icon" onClick={captureLocation}>
