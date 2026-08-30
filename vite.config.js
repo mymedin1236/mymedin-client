@@ -17,10 +17,10 @@ export default defineConfig({
       injectRegister: null,
       includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "MyDentalBooking",
-        short_name: "MyDentalBooking",
+        name: "MyMedin",
+        short_name: "MyMedin",
         description:
-          "Find dentists nearby, book appointments, manage clients, supplies and finances.",
+          "Find doctors nearby, book appointments, manage clients, supplies and finances.",
         theme_color: "#ffffff",
         background_color: "#f2f6fc",
         display: "standalone",

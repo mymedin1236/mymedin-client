@@ -9,11 +9,11 @@ import { trackAgreementSigned } from "../utils/analytics";
 const AGREEMENT_VERSION = "2026-08-v1";
 
 // The service agreement terms. Edit the wording here as your business needs —
-// this is the content the dentist reads and e-signs.
+// this is the content the doctor reads and e-signs.
 const TERMS = [
   {
     title: "1. The service",
-    body: "MyDentalBooking provides a cloud-based dental clinic management and online booking platform — appointments, patient records, payments and ledger, automatic reminders, and a public clinic profile. Access is via any web browser; no installation is required.",
+    body: "MyMedin provides a cloud-based medical practice management and online booking platform — appointments, patient records, payments and ledger, automatic reminders, and a public clinic profile. Access is via any web browser; no installation is required.",
   },
   {
     title: "2. Discovery phase (free)",
@@ -55,10 +55,10 @@ const TERMS = [
 
 export default function Agreement() {
   const { user, updateUser } = useAuth();
-  const isDentist = user.role === "dentist";
+  const isDoctor = user.role === "doctor";
 
   // The agreement lives on the clinic OWNER. We fetch it so an assistant can view
-  // it read-only, and the dentist sees their own to sign.
+  // it read-only, and the doctor sees their own to sign.
   const [agreement, setAgreement] = useState(null);
   const [clinicName, setClinicName] = useState(user.clinicName || "");
   const [loadingAgreement, setLoadingAgreement] = useState(true);
@@ -196,7 +196,7 @@ export default function Agreement() {
         </div>
       )}
 
-      {!accepted && isDentist && (
+      {!accepted && isDoctor && (
         <div className="card" style={{ borderColor: "var(--primary)" }}>
           <p className="icon" style={{ margin: 0 }}>
             <Icon name="info" size={18} /> Please read the terms below and e-sign to activate your
@@ -204,11 +204,11 @@ export default function Agreement() {
           </p>
         </div>
       )}
-      {!accepted && !isDentist && (
+      {!accepted && !isDoctor && (
         <div className="card" style={{ borderColor: "var(--amber, #d98a00)" }}>
           <p className="icon" style={{ margin: 0 }}>
             <Icon name="visibility" size={18} /> View only — the agreement has not been signed yet.
-            Only the clinic owner (dentist) can sign it.
+            Only the clinic owner (doctor) can sign it.
           </p>
         </div>
       )}
@@ -228,9 +228,9 @@ export default function Agreement() {
 
       {/* Terms */}
       <div className="card agreement-doc">
-        <h3 style={{ marginTop: 0 }}>MyDentalBooking — Service Agreement</h3>
+        <h3 style={{ marginTop: 0 }}>MyMedin — Service Agreement</h3>
         <p className="muted" style={{ marginTop: 0 }}>
-          Between MyDentalBooking (“we”, “us”) and {clinicName || "your clinic"} (“the Clinic”, “you”).
+          Between MyMedin (“we”, “us”) and {clinicName || "your clinic"} (“the Clinic”, “you”).
         </p>
         {TERMS.map((t) => (
           <div key={t.title} className="agreement-clause">
@@ -244,8 +244,8 @@ export default function Agreement() {
         </p>
       </div>
 
-      {/* Signature — only the clinic owner (dentist) can sign */}
-      {!accepted && isDentist && (
+      {/* Signature — only the clinic owner (doctor) can sign */}
+      {!accepted && isDoctor && (
         <div className="card">
           <h3 style={{ marginTop: 0 }} className="icon"><Icon name="draw" size={18} /> E-signature</h3>
           {error && <div className="error">{error}</div>}

@@ -18,13 +18,13 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "MyDentalBooking", body: event.data?.text() || "" };
+    data = { title: "MyMedin", body: event.data?.text() || "" };
   }
-  const title = data.title || "MyDentalBooking";
+  const title = data.title || "MyMedin";
   const options = {
     body: data.body || "",
-    icon: "/pwa-192x192.png", // full-color tooth logo (large image)
-    badge: "/badge-96x96.png", // monochrome tooth silhouette (status bar)
+    icon: "/pwa-192x192.png", // full-color app logo (large image)
+    badge: "/badge-96x96.png", // monochrome app silhouette (status bar)
     vibrate: [120, 60, 120],
     data: { url: data.url || "/", ack: data.ack || null },
     // When the notification can be acknowledged, add a one-tap "Acknowledge" button.
@@ -36,7 +36,7 @@ self.addEventListener("push", (event) => {
         type: "window",
         includeUncontrolled: true,
       });
-      // Let any open app window play the branded MyDentalBooking chime + refresh
+      // Let any open app window play the branded MyMedin chime + refresh
       // its list immediately, without waiting for the next poll.
       for (const client of windows) {
         client.postMessage({ type: "push-received", url: options.data.url });

@@ -7,7 +7,7 @@ export default function FullScreenLoader({ label = "Loading…" }) {
       <div className="fsl-inner">
         <span className="fsl-spinner" />
         <div className="fsl-brand">
-          <Icon name="dentistry" /> MyDentalBooking
+          <Icon name="stethoscope" /> MyMedin
         </div>
       </div>
     </div>

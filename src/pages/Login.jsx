@@ -73,9 +73,9 @@ export default function Login() {
     <div className="page auth-page">
       <form className="card" onSubmit={handleSubmit} noValidate>
         <div className="auth-brand">
-          <img src="/favicon.svg" alt="MyDentalBooking" className="auth-logo" />
+          <img src="/favicon.svg" alt="MyMedin" className="auth-logo" />
           <div>
-            <div className="auth-title">MyDentalBooking</div>
+            <div className="auth-title">MyMedin</div>
             <div className="auth-subtitle">Sign in to your account</div>
           </div>
         </div>

@@ -8,20 +8,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, "../public");
 mkdirSync(publicDir, { recursive: true });
 
-// Shared tooth silhouette (viewBox 0 0 512 512)
-const TOOTH = `M256 120
-  C 198 120 152 148 140 196
-  C 130 236 142 306 160 366
-  C 170 398 180 414 194 414
-  C 210 414 212 378 220 350
-  C 226 328 238 318 256 318
-  C 274 318 286 328 292 350
-  C 300 378 302 414 318 414
-  C 332 414 342 398 352 366
-  C 370 306 382 236 372 196
-  C 360 148 314 120 256 120 Z`;
+// Shared medical-cross mark (viewBox 0 0 512 512)
+const CROSS = `M186 86
+  L326 86 L326 186 L426 186 L426 326 L326 326 L326 426
+  L186 426 L186 326 L86 326 L86 186 L186 186 Z`;
 
-// App icon: white tooth on a navy→blue gradient (full-bleed, good for maskable)
+// App icon: white cross on a navy→blue gradient (full-bleed, good for maskable)
 const appSvg = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -30,12 +22,12 @@ const appSvg = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http:
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <path fill="#ffffff" d="${TOOTH}"/>
+  <path fill="#ffffff" d="${CROSS}"/>
 </svg>`;
 
-// Notification badge: solid white tooth on transparent (Android tints by alpha)
+// Notification badge: solid white cross on transparent (Android tints by alpha)
 const badgeSvg = `<svg width="96" height="96" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <path fill="#ffffff" d="${TOOTH}"/>
+  <path fill="#ffffff" d="${CROSS}"/>
 </svg>`;
 
 const appBuf = Buffer.from(appSvg);

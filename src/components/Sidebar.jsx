@@ -14,8 +14,8 @@ export default function Sidebar({ open, onNavigate, myDentistId }) {
     <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="sidebar-brand">
         <Link to="/" className="icon" onClick={onNavigate}>
-          <Icon name="dentistry" />
-          <span>MyDentalBooking</span>
+          <Icon name="stethoscope" />
+          <span>MyMedin</span>
         </Link>
       </div>
 

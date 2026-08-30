@@ -1,4 +1,4 @@
-// The MyDentalBooking notification signature — a calm, rising bell-like triad
+// The MyMedin notification signature — a calm, rising bell-like triad
 // (D5 → F#5 → A5, a bright major chord) synthesised with the Web Audio API.
 // No audio file needed (CSP-safe, tiny), and it reads as a reassuring
 // health-app cue rather than a harsh system beep.
@@ -33,7 +33,7 @@ if (typeof window !== "undefined") {
 }
 
 // "Spa chimes" — a gentle descending 4-note figure (A5 → F#5 → D5 → A4) with
-// soft, lingering decays. Calm and wellness-like, the MyDentalBooking signature.
+// soft, lingering decays. Calm and wellness-like, the MyMedin signature.
 function playChime() {
   const c = getCtx();
   if (!c) return;

@@ -7,7 +7,7 @@ Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
-Disallow: /dentist
+Disallow: /doctor
 Disallow: /client
 Disallow: /clients
 Disallow: /appointments

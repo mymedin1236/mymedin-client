@@ -87,7 +87,7 @@ function Shell({ children }) {
         <ImpersonationBanner />
         <header className="topbar">
           <Link to="/" className="topbar-brand icon">
-            <Icon name="dentistry" /> MyDentalBooking
+            <Icon name="stethoscope" /> MyMedin
           </Link>
           <div className="row gap">
             <NotificationBell />

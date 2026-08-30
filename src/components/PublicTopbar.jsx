@@ -5,8 +5,8 @@ import Icon from "./Icon";
 export default function PublicTopbar() {
   return (
     <header className="public-topbar">
-      <Link to="/find-dentist" className="topbar-brand icon">
-        <Icon name="dentistry" /> MyDentalBooking
+      <Link to="/find-doctor" className="topbar-brand icon">
+        <Icon name="stethoscope" /> MyMedin
       </Link>
       <div className="row gap">
         <Link to="/login" className="btn-secondary" style={{ textDecoration: "none" }}>
