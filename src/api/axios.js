@@ -7,7 +7,7 @@ import { loadingStore } from "./loading";
 // can't repoint the live app at another host and get blocked by the CSP.
 // Dev still uses VITE_API_URL (or localhost).
 const baseURL = import.meta.env.PROD
-  ? "https://dentalappserver.onrender.com/api"
+  ? "https://mymedin-server.onrender.com/api"
   : import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({ baseURL });
