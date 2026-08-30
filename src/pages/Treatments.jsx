@@ -13,7 +13,7 @@ const money = (n) =>
 const empty = {
   client: "",
   procedure: "",
-  toothNumber: "",
+  site: "",
   diagnosis: "",
   description: "",
   cost: "",
@@ -167,11 +167,12 @@ export default function Treatments() {
             />
           </label>
           <label>
-            Tooth #
+            Site / Location
             <input
-              name="toothNumber"
-              value={form.toothNumber}
+              name="site"
+              value={form.site}
               onChange={handleChange}
+              placeholder="e.g. left knee (optional)"
             />
           </label>
           <label>

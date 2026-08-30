@@ -51,7 +51,7 @@ export default function ClientLedger() {
   // Record-treatment modal
   const TREAT_EMPTY = {
     procedure: "",
-    toothNumber: "",
+    site: "",
     diagnosis: "",
     description: "",
     prescription: "",
@@ -112,7 +112,7 @@ export default function ClientLedger() {
     setEditTreatVersion(t.__v);
     setTreatForm({
       procedure: t.procedure || "",
-      toothNumber: t.toothNumber || "",
+      site: t.site || "",
       diagnosis: t.diagnosis || "",
       description: t.description || "",
       prescription: t.prescription || "",
@@ -182,7 +182,7 @@ export default function ClientLedger() {
     const createPayload = {
       client: id,
       procedure: treatForm.procedure,
-      toothNumber: treatForm.toothNumber,
+      site: treatForm.site,
       diagnosis: treatForm.diagnosis,
       description: treatForm.description,
       prescription: treatForm.prescription,
@@ -196,7 +196,7 @@ export default function ClientLedger() {
       if (editingTreatId) {
         await api.put(`/treatments/${editingTreatId}`, {
           procedure: treatForm.procedure,
-          toothNumber: treatForm.toothNumber,
+          site: treatForm.site,
           diagnosis: treatForm.diagnosis,
           description: treatForm.description,
           prescription: treatForm.prescription,
@@ -438,7 +438,7 @@ export default function ClientLedger() {
                 <strong>{t.procedure}</strong>
                 <div className="muted" style={{ fontSize: 13 }}>
                   {fmtDate(t.date)}
-                  {t.toothNumber ? ` · Tooth ${t.toothNumber}` : ""}
+                  {t.site ? ` · ${t.site}` : ""}
                   {t.diagnosis ? ` · ${t.diagnosis}` : ""}
                 </div>
                 {t.prescription && (
@@ -665,8 +665,8 @@ export default function ClientLedger() {
                   />
                 </label>
                 <label>
-                  Tooth #
-                  <input name="toothNumber" value={treatForm.toothNumber} onChange={treatChange} />
+                  Site / Location
+                  <input name="site" value={treatForm.site} onChange={treatChange} placeholder="optional" />
                 </label>
                 <label>
                   <span className="lbl">Charges <span className="req">*</span></span>

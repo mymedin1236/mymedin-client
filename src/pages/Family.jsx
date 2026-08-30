@@ -175,7 +175,7 @@ export default function Family() {
                     </div>
                     <div className="appt-card-body">
                       <span className="icon"><Icon name="event" size={16} /> {formatDate(t.date)}</span>
-                      {t.toothNumber && <span className="icon"><Icon name="dentistry" size={16} /> Tooth {t.toothNumber}</span>}
+                      {t.site && <span className="icon"><Icon name="location_on" size={16} /> {t.site}</span>}
                       {t.diagnosis && <span className="icon"><Icon name="clinical_notes" size={16} /> {t.diagnosis}</span>}
                       {t.cost > 0 && <span className="icon"><Icon name="payments" size={16} /> {money(t.cost)}</span>}
                     </div>

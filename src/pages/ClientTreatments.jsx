@@ -92,8 +92,8 @@ export default function ClientTreatments() {
                   </div>
                   <div className="appt-card-body">
                     <span className="icon"><Icon name="event" size={16} /> {formatDate(t.date)}</span>
-                    {t.toothNumber && (
-                      <span className="icon"><Icon name="dentistry" size={16} /> Tooth {t.toothNumber}</span>
+                    {t.site && (
+                      <span className="icon"><Icon name="location_on" size={16} /> {t.site}</span>
                     )}
                     {t.diagnosis && (
                       <span className="icon"><Icon name="clinical_notes" size={16} /> {t.diagnosis}</span>
@@ -146,7 +146,7 @@ export default function ClientTreatments() {
                 <textarea
                   rows={4}
                   autoFocus
-                  placeholder="e.g. The tooth started hurting again after 3 days, and there's swelling."
+                  placeholder="e.g. The pain started again after 3 days, and there's swelling."
                   value={reportText}
                   onChange={(e) => setReportText(e.target.value)}
                 />
