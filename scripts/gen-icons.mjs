@@ -9,11 +9,12 @@ const publicDir = resolve(__dirname, "../public");
 mkdirSync(publicDir, { recursive: true });
 
 // Shared medical-cross mark (viewBox 0 0 512 512).
-// Arms are thinner than the original (100 thick vs. 140) so the cross reads as
-// a slender plus instead of a bulky blob, while staying perfectly symmetric.
-const CROSS = `M206 86
-  L306 86 L306 206 L426 206 L426 306 L306 306 L306 426
-  L206 426 L206 306 L86 306 L86 206 L206 206 Z`;
+// Smaller overall footprint (224 vs. the original 340) with generous margin —
+// important for the PWA maskable icon, whose safe zone only guarantees the
+// center ~66% is visible — while keeping the same slender arm proportions.
+const CROSS = `M224 144
+  L288 144 L288 224 L368 224 L368 288 L288 288 L288 368
+  L224 368 L224 288 L144 288 L144 224 L224 224 Z`;
 
 // App icon: white cross on a navy→blue gradient (full-bleed, good for maskable)
 const appSvg = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
