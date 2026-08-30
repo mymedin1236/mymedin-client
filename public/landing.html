@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dental Management Software in Pakistan | MyDentalBooking</title>
+  <meta name="description" content="MyDentalBooking is dental clinic management software for dentists in Pakistan — online appointment booking, patient records, payments and automatic reminders that cut no-shows. Free 2-month trial, free setup." />
+  <link rel="canonical" href="https://www.mydentalbooking.com/" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MyDentalBooking" />
+  <meta property="og:title" content="Dental Management Software in Pakistan | MyDentalBooking" />
+  <meta property="og:description" content="Online booking, patient records, payments and reminders for dental clinics in Pakistan. Free 2-month trial, free setup." />
+  <meta property="og:url" content="https://www.mydentalbooking.com/" />
+  <meta property="og:image" content="https://www.mydentalbooking.com/pwa-512x512.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dental Management Software in Pakistan | MyDentalBooking" />
+  <meta name="twitter:description" content="Online booking, patient records, payments and reminders for dental clinics in Pakistan." />
+  <meta name="twitter:image" content="https://www.mydentalbooking.com/pwa-512x512.png" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Structured data: software + pricing offer -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "MyDentalBooking",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web, Android, iOS",
+    "description": "Dental clinic management software for dentists in Pakistan: online appointment booking, patient records, payments and automatic reminders.",
+    "url": "https://www.mydentalbooking.com/",
+    "areaServed": "Pakistan",
+    "offers": {
+      "@type": "Offer",
+      "price": "3000",
+      "priceCurrency": "PKR",
+      "description": "Free 2-month trial, then Rs 3,000/month. Free setup. 100% money-back guarantee."
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MyDentalBooking",
+    "url": "https://www.mydentalbooking.com/",
+    "logo": "https://www.mydentalbooking.com/pwa-512x512.png",
+    "contactPoint": { "@type": "ContactPoint", "telephone": "+92-319-0041011", "contactType": "customer support" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is MyDentalBooking?", "acceptedAnswer": { "@type": "Answer", "text": "MyDentalBooking is dental clinic management software for dentists in Pakistan. It handles online appointment booking, patient records, payments and finances, and sends automatic reminders to reduce no-shows." } },
+      { "@type": "Question", "name": "How much does dental clinic software cost in Pakistan?", "acceptedAnswer": { "@type": "Answer", "text": "MyDentalBooking is free for the first 2 months, then Rs 3,000 per month. Setup is free and there is a 100% money-back guarantee." } },
+      { "@type": "Question", "name": "Do I need to install anything?", "acceptedAnswer": { "@type": "Answer", "text": "No. MyDentalBooking runs in the browser on any phone, tablet or laptop, and can be added to your home screen like an app." } },
+      { "@type": "Question", "name": "Does it work for clinics in Lahore, Karachi and Islamabad?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. MyDentalBooking is built for dental clinics across Pakistan, including Lahore, Karachi and Islamabad." } }
+    ]
+  }
+  </script>
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --primary:#1877f2;--primary-dark:#166fe5;--navy:#0f1e36;--ink:#334155;
+      --muted:#64748b;--line:#e2e8f0;--bg:#f0f2f5;--surface:#fff;--tint:#e7f3ff;
+      --green:#31a24c;--amber:#b8791a;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);background:var(--surface);line-height:1.6;-webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+    h1,h2,h3{color:var(--navy);line-height:1.15;letter-spacing:-0.02em}
+    .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:11px 18px;border-radius:10px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-ghost{background:transparent;color:var(--navy);border-color:var(--line)}
+    .btn-ghost:hover{background:var(--bg)}
+    .btn-wa{background:var(--green);color:#fff}
+    .muted{color:var(--muted)}
+
+    /* Nav */
+    header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;height:64px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--navy);font-size:18px;white-space:nowrap;min-width:0}
+    .brand img{width:32px;height:32px;border-radius:8px;flex:none}
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links .lk{color:var(--ink);font-weight:600;font-size:15px}
+    .nav-links .lk:hover{color:var(--primary)}
+    .nav-cta{display:flex;align-items:center;gap:10px;flex:none}
+
+    /* Hero */
+    .hero{background:linear-gradient(180deg,var(--tint),var(--surface));padding:64px 0 40px}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+    .eyebrow{display:inline-block;background:var(--tint);color:var(--primary);font-weight:700;font-size:13px;padding:5px 12px;border-radius:20px;border:1px solid #dbe6ff;margin-bottom:16px}
+    .hero h1{font-size:clamp(20px,4.6vw,38px);margin-bottom:14px}
+    .hero p.sub{font-size:clamp(13.5px,2vw,17px);color:var(--muted);margin-bottom:24px;max-width:560px}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .hero-trust{font-size:14px;color:var(--muted)}
+    .hero-trust b{color:var(--navy)}
+    @media(max-width:860px){.hero-grid{grid-template-columns:1fr}.hero-mock{order:-1}}
+
+    /* Product mock */
+    .mock{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(15,30,54,.14);padding:16px;transform:rotate(.5deg)}
+    .mock-bar{display:flex;gap:6px;margin-bottom:12px}
+    .mock-bar i{width:10px;height:10px;border-radius:50%;background:var(--line);display:inline-block}
+    .mock-h{font-weight:800;color:var(--navy);font-size:15px;margin-bottom:10px}
+    .slot{border:1px solid var(--line);border-left:3px solid var(--primary);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+    .slot .t{font-weight:700;color:var(--navy);font-size:13px}
+    .slot .n{font-size:13px}
+    .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--tint);color:var(--primary)}
+    .badge.amber{background:#fff4e5;color:var(--amber)}
+
+    /* Sections */
+    section{padding:56px 0}
+    .section-head{text-align:center;max-width:680px;margin:0 auto 36px}
+    .section-head h2{font-size:clamp(24px,4vw,34px);margin-bottom:10px}
+    .section-head p{color:var(--muted);font-size:17px}
+
+    .trust-bar{background:var(--navy);color:#cfe0ff;text-align:center;padding:13px 16px;font-weight:600;font-size:12px}
+    .trust-bar b{color:#fff}
+
+    .grid{display:grid;gap:20px}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    @media(max-width:860px){.grid-3{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.grid-3,.grid-2{grid-template-columns:1fr}}
+
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+    .feat .ic{width:44px;height:44px;border-radius:11px;background:var(--tint);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+    .feat h3{font-size:18px;margin-bottom:6px}
+    .feat p{color:var(--muted);font-size:13px}
+
+    .steps{counter-reset:s}
+    .step{position:relative;padding-left:56px}
+    .step:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+    .step h3{font-size:17px;margin-bottom:4px}
+    .step p{color:var(--muted);font-size:15px}
+
+    /* Pricing */
+    .price-wrap{max-width:520px;margin:0 auto}
+    .price-card{background:var(--surface);border:2px solid var(--primary);border-radius:18px;padding:32px;text-align:center;box-shadow:0 20px 50px rgba(37,99,235,.14)}
+    .price-trial{display:inline-block;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:5px 14px;border-radius:20px;margin-bottom:14px}
+    .price-amt{font-size:46px;font-weight:800;color:var(--navy);line-height:1}
+    .price-amt span{font-size:18px;color:var(--muted);font-weight:600}
+    .price-sub{color:var(--muted);margin:6px 0 20px}
+    .price-list{list-style:none;text-align:left;max-width:320px;margin:0 auto 22px}
+    .price-list li{padding:7px 0 7px 28px;position:relative;font-weight:600;color:var(--ink)}
+    .price-list li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:800}
+
+    /* Testimonials */
+    .quote{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+    .quote p{font-size:16px;color:var(--ink);margin-bottom:14px}
+    .quote .who{display:flex;align-items:center;gap:12px}
+    .avatar{width:44px;height:44px;border-radius:50%;background:var(--tint);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800}
+    .quote .who b{color:var(--navy);display:block}
+    .stars{color:#f5a623;letter-spacing:2px;margin-bottom:8px}
+
+    /* FAQ */
+    .faq details{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--surface)}
+    .faq summary{font-weight:700;color:var(--navy);cursor:pointer;font-size:16px;list-style:none}
+    .faq summary::-webkit-details-marker{display:none}
+    .faq summary:after{content:"+";float:right;color:var(--primary);font-weight:800}
+    .faq details[open] summary:after{content:"–"}
+    .faq p{color:var(--muted);margin-top:10px}
+
+    /* CTA band */
+    .cta-band{background:linear-gradient(120deg,var(--primary),#4f46e5);color:#fff;border-radius:20px;padding:44px;text-align:center}
+    .cta-band h2{color:#fff;font-size:clamp(24px,4vw,32px);margin-bottom:10px}
+    .cta-band p{color:#dbe6ff;margin-bottom:22px;font-size:17px}
+    .cta-band .btn-primary{background:#fff;color:var(--primary)}
+    .cta-band .btn-primary:hover{background:#eef}
+
+    /* Footer */
+    footer{background:var(--navy);color:#9db4d6;padding:40px 0;margin-top:24px}
+    .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;align-items:flex-start}
+    footer .brand{color:#fff}
+    footer a{color:#cfe0ff}
+    footer a:hover{color:#fff}
+    .foot-cities{font-size:13px;color:#6f88ad;margin-top:18px;border-top:1px solid #22344f;padding-top:16px;text-align:center}
+
+    /* ---------- Responsive ---------- */
+    /* Tablet / small laptop */
+    @media(max-width:760px){
+      .nav-links{display:none}
+      .nav-inner{height:56px}
+      .brand{font-size:15px}
+      .brand img{width:28px;height:28px}
+      .nav-cta{gap:6px}
+      .nav-cta .btn{padding:9px 13px;font-size:13px}
+      .nav-cta .btn-ghost{border:none;padding:9px 6px}
+    }
+    /* Phones */
+    @media(max-width:640px){
+      .wrap{padding:0 16px}
+      section{padding:38px 0}
+      .hero{padding:30px 0 24px}
+      .eyebrow{font-size:12px;margin-bottom:12px}
+      .hero p.sub{margin-bottom:18px}
+      .hero-cta{gap:10px}
+      .hero-cta .btn{flex:1 1 auto;justify-content:center;font-size:12px;padding:11px 14px}
+      .hero-trust{font-size:12px}
+      .section-head{margin-bottom:24px}
+      .section-head h2{font-size:20px}
+      .section-head p{font-size:13px}
+      .feat .ic{width:40px;height:40px;font-size:20px}
+      .feat h3{font-size:15px}
+      .feat p{font-size:12px}
+      .step h3{font-size:15px}
+      .step p{font-size:13px}
+      .card,.quote{padding:18px}
+      .quote p{font-size:14px}
+      .price-card{padding:22px 18px}
+      .price-trial{font-size:12px}
+      .price-amt{font-size:34px}
+      .price-list li{font-size:14px}
+      .faq summary{font-size:14px}
+      .faq p{font-size:13px}
+      .cta-band{padding:28px 18px}
+      .cta-band h2{font-size:20px}
+      .cta-band p{font-size:14px}
+      .foot-grid{flex-direction:column;gap:18px}
+    }
+    /* Small phones — logo only, keep the two buttons inline */
+    @media(max-width:380px){
+      .brand .brand-txt{display:none}
+      .nav-cta .btn{padding:8px 11px;font-size:12.5px}
+    }
+  </style>
+</head>
+<body>
+  <!-- If already logged in, this bounces the user straight to their dashboard. -->
+  <script src="/landing.js"></script>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a href="/" class="brand"><img src="/favicon.svg" alt="MyDentalBooking logo" /> <span class="brand-txt">MyDentalBooking</span></a>
+      <nav class="nav-links">
+        <a class="lk" href="#features">Features</a>
+        <a class="lk" href="#pricing">Pricing</a>
+        <a class="lk" href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="/login">Log in</a>
+        <a class="btn btn-primary" href="/register">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">For dental clinics in Pakistan</span>
+        <h1>Dental Management Software in Pakistan</h1>
+        <p class="sub">Run your whole clinic from your phone — online appointment booking, patient records, payments and automatic reminders that cut no-shows. Built for dentists in Lahore, Karachi, Islamabad and across Pakistan.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="/register">Start free — 2 months</a>
+          <a class="btn btn-wa" href="https://wa.me/923190041011" target="_blank" rel="noopener">WhatsApp us</a>
+        </div>
+        <div class="hero-trust">✓ Free setup &nbsp;·&nbsp; ✓ Works on any phone &nbsp;·&nbsp; <b>100% money-back guarantee</b></div>
+      </div>
+      <div class="hero-mock">
+        <div class="mock">
+          <div class="mock-bar"><i></i><i></i><i></i></div>
+          <div class="mock-h">📅 Today's schedule</div>
+          <div class="slot"><div class="t">6:00 PM</div><div class="n">Hamza Sheikh</div><span class="badge">Scheduled</span></div>
+          <div class="slot"><div class="t">6:30 PM</div><div class="n">Ayesha Khan</div> <span class="badge">Scheduled</span> <span class="badge amber">Balance Rs 1,200</span></div>
+          <div class="slot"><div class="t">7:15 PM</div><div class="n">Usman Tariq</div><span class="badge">Scheduled</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="trust-bar wrap-full">Trusted by dentists across Pakistan — <b>online booking, fewer no-shows, zero paperwork.</b></div>
+
+  <!-- PROBLEM -->
+  <section>
+    <div class="wrap section-head">
+      <h2>Still running your clinic on a register?</h2>
+      <p>Paper registers lose records, phone-only booking causes no-shows, and payments are hard to track. MyDentalBooking puts appointments, patients, payments and reminders in one place — on your phone.</p>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" style="background:var(--bg)">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Everything your dental clinic needs</h2>
+        <p>One simple app for the whole practice.</p>
+      </div>
+      <div class="grid grid-3">
+        <div class="card feat"><div class="ic">📅</div><h3>Online appointment booking</h3><p>Patients book you online, day or night. See your whole schedule at a glance.</p></div>
+        <div class="card feat"><div class="ic">🔔</div><h3>Automatic reminders</h3><p>WhatsApp &amp; push reminders before every appointment — dramatically fewer no-shows.</p></div>
+        <div class="card feat"><div class="ic">🗂️</div><h3>Patient records</h3><p>Full treatment history, notes and files for every patient — never lose a record again.</p></div>
+        <div class="card feat"><div class="ic">💳</div><h3>Payments &amp; ledger</h3><p>Track what's collected and what's outstanding per patient, automatically.</p></div>
+        <div class="card feat"><div class="ic">📊</div><h3>Finances</h3><p>See collected, billed and outstanding across day, week, month or year.</p></div>
+        <div class="card feat"><div class="ic">📱</div><h3>Works on any phone</h3><p>No installation needed. Add it to your home screen and use it like an app.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="wrap">
+      <div class="section-head"><h2>Up and running in a day</h2></div>
+      <div class="grid grid-3 steps">
+        <div class="step"><h3>Sign up</h3><p>Create your clinic account in minutes — no credit card.</p></div>
+        <div class="step"><h3>We set it up free</h3><p>We add your details and hours, and get you started. Setup is on us.</p></div>
+        <div class="step"><h3>Start booking</h3><p>Share your booking link, take appointments, and track everything.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" style="background:var(--bg)">
+    <div class="wrap">
+      <div class="section-head"><p>Try it free. Only pay if it works for your clinic.</p></div>
+      <div class="price-wrap">
+        <div class="price-card">
+          <span class="price-trial">2 months FREE trial</span>
+          <div class="price-amt">Rs 3,000<span>/month</span></div>
+          <div class="price-sub">from the 3rd month onwards</div>
+          <ul class="price-list">
+            <li>Free setup &amp; onboarding</li>
+            <li>Unlimited patients &amp; appointments</li>
+            <li>Unlimited devices for your staff</li>
+            <li>Automatic WhatsApp &amp; push reminders</li>
+            <li>24/7 WhatsApp support</li>
+            <li>100% money-back guarantee</li>
+          </ul>
+          <a class="btn btn-primary" href="/register" style="width:100%;justify-content:center">Start your free trial</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section>
+    <div class="wrap">
+      <div class="section-head"><h2>Loved by dentists</h2></div>
+      <div class="grid grid-2">
+        <div class="quote">
+          <div class="stars">★★★★★</div>
+          <p>"My clinic runs entirely on MyDentalBooking now. Patients book themselves and no-shows have dropped a lot."</p>
+          <div class="who"><span class="avatar">AS</span><span><b>Dr. Ahmad Shamim Qureshi</b><span class="muted">Dental Wellness</span></span></div>
+        </div>
+        <div class="quote">
+          <div class="stars">★★★★★</div>
+          <p>"Simple, fast, and everything is in one place — appointments, records and payments. Setup was done for me."</p>
+          <div class="who"><span class="avatar">HK</span><span><b>Dr. Hamza Khan</b><span class="muted">Dentist</span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" style="background:var(--bg)">
+    <div class="wrap" style="max-width:760px">
+      <div class="section-head"><h2>Frequently asked questions</h2></div>
+      <div class="faq">
+        <details open><summary>What is MyDentalBooking?</summary><p>Dental clinic management software for dentists in Pakistan — online appointment booking, patient records, payments and finances, plus automatic reminders that reduce no-shows.</p></details>
+        <details><summary>How much does it cost?</summary><p>Free for the first 2 months, then Rs 3,000/month. Setup is free and there's a 100% money-back guarantee.</p></details>
+        <details><summary>Do I need to install anything?</summary><p>No. It runs in the browser on any phone, tablet or laptop, and can be added to your home screen like an app.</p></details>
+        <details><summary>Does it work for clinics in Lahore, Karachi and Islamabad?</summary><p>Yes — MyDentalBooking is built for dental clinics across Pakistan.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section>
+    <div class="wrap">
+      <div class="cta-band">
+        <h2>Ready to modernise your dental clinic?</h2>
+        <p>Start your free 2-month trial today — we'll set it up for you.</p>
+        <a class="btn btn-primary" href="/register">Get started free</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <a href="/" class="brand"><img src="/favicon.svg" alt="MyDentalBooking" style="width:28px;height:28px;border-radius:6px" /> MyDentalBooking</a>
+          <p style="margin-top:8px;max-width:280px;font-size:14px">Dental clinic management software for dentists across Pakistan.</p>
+        </div>
+        <div>
+          <strong style="color:#fff;display:block;margin-bottom:8px">Product</strong>
+          <a href="#features">Features</a> &nbsp;·&nbsp; <a href="#pricing">Pricing</a> &nbsp;·&nbsp; <a href="#faq">FAQ</a>
+        </div>
+        <div>
+          <strong style="color:#fff;display:block;margin-bottom:8px">Get started</strong>
+          <a href="/register">Sign up</a> &nbsp;·&nbsp; <a href="/login">Log in</a><br/>
+          <a href="https://wa.me/923190041011" target="_blank" rel="noopener">WhatsApp: 0319 0041011</a>
+        </div>
+      </div>
+      <div class="foot-cities">
+        Dental management software in Pakistan · Lahore · Karachi · Islamabad · Rawalpindi · Faisalabad<br/>
+        © 2026 MyDentalBooking. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,97 @@
+import { useState } from "react";
+import Icon from "./Icon";
+import { formatDate } from "../utils/date";
+
+const todayStr = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
+
+// Editor for per-date exceptions to the weekly clinic hours: leaving early on a
+// specific day, opening late, or taking the day off. `value` is an array of
+// { date, closed, start, end }. These override the normal weekly hours for the
+// matching date only, so patients can't book outside the adjusted window.
+export default function DayOverridesEditor({ value = [], onChange }) {
+  const [date, setDate] = useState("");
+  const [mode, setMode] = useState("hours"); // "hours" | "closed"
+  const [start, setStart] = useState("09:00");
+  const [end, setEnd] = useState("17:00");
+
+  const add = () => {
+    if (!date) return;
+    if (mode === "hours" && (!start || !end || start >= end)) return;
+    const entry =
+      mode === "closed"
+        ? { date, closed: true }
+        : { date, closed: false, start, end };
+    // Replace any existing exception for the same date.
+    onChange([...value.filter((o) => o.date !== date), entry].sort((a, b) => a.date.localeCompare(b.date)));
+    setDate("");
+  };
+
+  const remove = (d) => onChange(value.filter((o) => o.date !== d));
+
+  const sorted = [...value].sort((a, b) => a.date.localeCompare(b.date));
+
+  return (
+    <div className="override-editor">
+      {sorted.length > 0 && (
+        <ul className="override-list">
+          {sorted.map((o) => (
+            <li key={o.date} className="override-row">
+              <span className="icon">
+                <Icon name="event" size={16} /> {formatDate(`${o.date}T00:00:00`)}
+              </span>
+              <span className={`override-tag${o.closed ? " off" : ""}`}>
+                {o.closed ? "Day off" : `${o.start} – ${o.end}`}
+              </span>
+              <button
+                type="button"
+                className="btn-secondary icon override-remove"
+                onClick={() => remove(o.date)}
+                aria-label={`Remove exception for ${o.date}`}
+              >
+                <Icon name="delete" size={16} /> Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="override-add">
+        <label>
+          Date
+          <input
+            type="date"
+            min={todayStr()}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </label>
+        <label>
+          For this day
+          <select value={mode} onChange={(e) => setMode(e.target.value)}>
+            <option value="hours">Custom hours</option>
+            <option value="closed">Closed (day off)</option>
+          </select>
+        </label>
+        {mode === "hours" && (
+          <div className="override-times">
+            <label>
+              Opens
+              <input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+            </label>
+            <label>
+              Closes
+              <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+            </label>
+          </div>
+        )}
+        <button type="button" className="btn-secondary icon" onClick={add} disabled={!date}>
+          <Icon name="add_circle" size={18} /> Add exception
+        </button>
+      </div>
+    </div>
+  );
+}

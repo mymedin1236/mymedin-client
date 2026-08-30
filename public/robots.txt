@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /$
+Allow: /landing.html
+Allow: /favicon.svg
+# App routes are a private, login-gated single-page app — not for indexing.
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /dentist
+Disallow: /client
+Disallow: /clients
+Disallow: /appointments
+Disallow: /treatments
+Disallow: /finances
+Disallow: /expenses
+Disallow: /staff
+Disallow: /dependents
+Disallow: /settings
+Disallow: /profile
+Disallow: /vendor
+Disallow: /supplies
+
+Sitemap: https://www.mydentalbooking.com/sitemap.xml

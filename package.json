@@ -1,0 +1,28 @@
+{
+  "name": "dental-clinic-client",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vercel/edge": "^1.2.1",
+    "axios": "^1.7.7",
+    "mixpanel-browser": "^2.82.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-easy-crop": "^6.0.2",
+    "react-router-dom": "^6.26.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "sharp": "^0.35.1",
+    "vite": "^5.4.2",
+    "vite-plugin-pwa": "^1.3.0",
+    "workbox-core": "^7.4.1",
+    "workbox-precaching": "^7.4.1"
+  }
+}
