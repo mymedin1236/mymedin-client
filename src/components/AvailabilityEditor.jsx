@@ -94,7 +94,7 @@ export default function AvailabilityEditor({ value = [], onChange }) {
                     onClick={() => copyToAllDays(day)}
                     title={`Use ${day}'s hours for every day`}
                   >
-                    <Icon name="content_copy" size={16} /> Same for every day
+                    <Icon name="content_copy" size={16} /> Use for all days
                   </button>
                 </div>
               </div>
