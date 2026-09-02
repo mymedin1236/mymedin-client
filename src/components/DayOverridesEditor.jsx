@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "./Icon";
 import { formatDate } from "../utils/date";
+import { formatTime12 } from "../utils/time";
+import TimeInput12h from "./TimeInput12h";
 
 const todayStr = () => {
   const d = new Date();
@@ -44,7 +46,7 @@ export default function DayOverridesEditor({ value = [], onChange }) {
                 <Icon name="event" size={16} /> {formatDate(`${o.date}T00:00:00`)}
               </span>
               <span className={`override-tag${o.closed ? " off" : ""}`}>
-                {o.closed ? "Day off" : `${o.start} – ${o.end}`}
+                {o.closed ? "Day off" : `${formatTime12(o.start)} – ${formatTime12(o.end)}`}
               </span>
               <button
                 type="button"
@@ -80,11 +82,11 @@ export default function DayOverridesEditor({ value = [], onChange }) {
           <div className="override-times">
             <label>
               Opens
-              <input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+              <TimeInput12h aria-label="Opens" value={start} onChange={setStart} />
             </label>
             <label>
               Closes
-              <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <TimeInput12h aria-label="Closes" value={end} onChange={setEnd} />
             </label>
           </div>
         )}

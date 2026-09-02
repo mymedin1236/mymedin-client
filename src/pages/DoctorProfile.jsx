@@ -7,14 +7,10 @@ import Avatar from "../components/Avatar";
 import StarRating from "../components/StarRating";
 import PublicTopbar from "../components/PublicTopbar";
 import { trackDoctorAssociationRequested } from "../utils/analytics";
+import { formatTime12 } from "../utils/time";
 
 // "17:00" -> "5:00 PM" (or unchanged when show24).
-const fmtTime = (hhmm, show24) => {
-  if (show24 || !hhmm) return hhmm;
-  const [h, m] = hhmm.split(":").map(Number);
-  const ap = h < 12 ? "AM" : "PM";
-  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${ap}`;
-};
+const fmtTime = (hhmm, show24) => (show24 ? hhmm : formatTime12(hhmm));
 
 export default function DoctorProfile() {
   const { id } = useParams();

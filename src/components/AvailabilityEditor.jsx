@@ -1,4 +1,5 @@
 import Icon from "./Icon";
+import TimeInput12h from "./TimeInput12h";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -47,16 +48,16 @@ export default function AvailabilityEditor({ value = [], onChange }) {
               <div className="avail-blocks">
                 {blocks.map((b, i) => (
                   <div className="avail-times" key={i}>
-                    <input
-                      type="time"
+                    <TimeInput12h
+                      aria-label={`${day} opening time`}
                       value={b.start}
-                      onChange={(e) => setTime(day, i, "start", e.target.value)}
+                      onChange={(t) => setTime(day, i, "start", t)}
                     />
                     <span className="avail-dash">–</span>
-                    <input
-                      type="time"
+                    <TimeInput12h
+                      aria-label={`${day} closing time`}
                       value={b.end}
-                      onChange={(e) => setTime(day, i, "end", e.target.value)}
+                      onChange={(t) => setTime(day, i, "end", t)}
                     />
                     {blocks.length > 1 && (
                       <button

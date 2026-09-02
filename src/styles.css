@@ -1402,6 +1402,11 @@ a.btn-danger-soft {
 .avail-times input { width: auto; }
 .avail-dash { color: var(--muted); }
 
+/* 12-hour hour/minute/AM-PM picker (TimeInput12h) */
+.time-input-12h { display: inline-flex; align-items: center; gap: 4px; }
+.time-input-12h select { width: auto; }
+.time-input-12h-sep { color: var(--muted); }
+
 /* Per-date schedule exceptions (early leave / day off) */
 .override-editor { display: flex; flex-direction: column; gap: 12px; }
 .override-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
