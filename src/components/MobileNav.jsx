@@ -1,14 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useNotifications } from "../context/NotificationsContext";
 import { ROLE_LINKS, decorateClientLinks } from "../navLinks";
 import Icon from "./Icon";
 import { trackTabViewed } from "../utils/analytics";
+
+// Pending-request counts shown as a badge on the matching nav tab.
+const badgeFor = (to, { associationRequests, appointmentRequests }) => {
+  if (to === "/clients") return associationRequests;
+  if (to === "/appointments") return appointmentRequests;
+  return 0;
+};
 
 // Bottom tab bar shown on mobile to switch between sections. When the links
 // overflow (e.g. the doctor has many), the bar scrolls horizontally and shows
 // a right-edge chevron; tapping it nudges the bar along. Scroll is contained so
 // swiping the bar never triggers the browser's back/forward gesture.
 export default function MobileNav({ role, myDoctorId }) {
+  const { associationRequests, appointmentRequests } = useNotifications() || {};
   const links = decorateClientLinks(ROLE_LINKS[role] || [], myDoctorId);
   const scrollRef = useRef(null);
   const [less, setLess] = useState(false); // more tabs to the left
@@ -43,18 +52,24 @@ export default function MobileNav({ role, myDoctorId }) {
         </button>
       )}
       <nav className="mobile-nav" ref={scrollRef}>
-        {links.map((l) => (
-          <NavLink
-            key={l.to}
-            to={l.to}
-            end={links.some((o) => o.to !== l.to && o.to.startsWith(`${l.to}/`))}
-            className="mobile-nav-item"
-            onClick={() => trackTabViewed(l.label, l.to)}
-          >
-            <Icon name={l.icon} />
-            <span>{l.label}</span>
-          </NavLink>
-        ))}
+        {links.map((l) => {
+          const count = badgeFor(l.to, { associationRequests, appointmentRequests });
+          return (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={links.some((o) => o.to !== l.to && o.to.startsWith(`${l.to}/`))}
+              className="mobile-nav-item"
+              onClick={() => trackTabViewed(l.label, l.to)}
+            >
+              <span className="nav-icon-wrap">
+                <Icon name={l.icon} />
+                {count > 0 && <span className="nav-badge">{count > 9 ? "9+" : count}</span>}
+              </span>
+              <span>{l.label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
       {more && (
         <button type="button" className="mobile-nav-arrow right" onClick={() => nudge(1)} aria-label="More tabs">

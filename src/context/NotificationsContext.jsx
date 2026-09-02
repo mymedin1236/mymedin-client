@@ -11,6 +11,8 @@ export const NotificationsProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [total, setTotal] = useState(0);
+  const [associationRequests, setAssociationRequests] = useState(0);
+  const [appointmentRequests, setAppointmentRequests] = useState(0);
   const [limit, setLimit] = useState(50);
   const [enabled, setEnabledState] = useState(
     () => localStorage.getItem("notifEnabled") !== "false"
@@ -31,6 +33,8 @@ export const NotificationsProvider = ({ children }) => {
       setItems(data.items);
       setUnreadCount(data.unreadCount);
       setTotal(data.total ?? data.items.length);
+      setAssociationRequests(data.associationRequests ?? 0);
+      setAppointmentRequests(data.appointmentRequests ?? 0);
       // Branded chime + vibration only when enabled AND a new unread arrives after first load
       if (enabledRef.current && !firstLoad.current && data.unreadCount > prevUnread.current) {
         playNotificationAlert();
@@ -90,6 +94,8 @@ export const NotificationsProvider = ({ children }) => {
     if (!user) {
       setItems([]);
       setUnreadCount(0);
+      setAssociationRequests(0);
+      setAppointmentRequests(0);
       prevUnread.current = 0;
       firstLoad.current = true;
       return;
@@ -191,6 +197,8 @@ export const NotificationsProvider = ({ children }) => {
         items,
         unreadCount,
         total,
+        associationRequests,
+        appointmentRequests,
         hasMore: items.length < total,
         loadMore,
         refresh,

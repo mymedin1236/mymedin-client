@@ -473,6 +473,26 @@ a:hover { text-decoration: underline; }
   justify-content: center;
   line-height: 1;
 }
+/* Pending-request badge on a sidebar/bottom-nav tab icon (Patients, Appointments) */
+.nav-icon-wrap { position: relative; display: inline-flex; }
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .bell-dropdown {
   /* Desktop: drop below the bell, aligned to its right edge */
   position: absolute;
