@@ -1,5 +1,6 @@
 import Icon from "./Icon";
 import TimeInput12h from "./TimeInput12h";
+import { formatTime12 } from "../utils/time";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -28,6 +29,18 @@ export default function AvailabilityEditor({ value = [], onChange }) {
   const removeBlock = (day, idx) => emit(day, (byDay[day] || []).filter((_, i) => i !== idx));
   const setTime = (day, idx, field, t) =>
     emit(day, (byDay[day] || []).map((b, i) => (i === idx ? { ...b, [field]: t } : b)));
+
+  // Most clinics keep the same hours every day — let the doctor set one day
+  // and copy it everywhere instead of repeating the same entry seven times.
+  const copyToAllDays = (day) => {
+    const blocks = byDay[day] || [];
+    if (!blocks.length) return;
+    const summary = blocks.map((b) => `${formatTime12(b.start)}–${formatTime12(b.end)}`).join(", ");
+    if (!window.confirm(`Use ${day}'s hours (${summary}) for every day? This replaces any other days' hours.`)) {
+      return;
+    }
+    onChange(WEEKDAYS.flatMap((d) => blocks.map((b) => ({ ...b, day: d }))));
+  };
 
   return (
     <div className="avail-editor">
@@ -71,9 +84,19 @@ export default function AvailabilityEditor({ value = [], onChange }) {
                     )}
                   </div>
                 ))}
-                <button type="button" className="btn-secondary avail-add icon" onClick={() => addBlock(day)}>
-                  <Icon name="add" size={16} /> Add hours
-                </button>
+                <div className="avail-block-actions">
+                  <button type="button" className="btn-secondary avail-add icon" onClick={() => addBlock(day)}>
+                    <Icon name="add" size={16} /> Add hours
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary avail-add icon"
+                    onClick={() => copyToAllDays(day)}
+                    title={`Use ${day}'s hours for every day`}
+                  >
+                    <Icon name="content_copy" size={16} /> Same for every day
+                  </button>
+                </div>
               </div>
             ) : (
               <span className="muted">Closed</span>

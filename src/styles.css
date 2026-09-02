@@ -2427,6 +2427,7 @@ h2.icon { gap: 8px; }
 .avail-row { align-items: flex-start; }
 .avail-day { margin-top: 2px; }
 .avail-blocks { display: flex; flex-direction: column; gap: 8px; }
+.avail-block-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 /* Compact secondary button; look + hover come from .btn-secondary so it matches
    every other button in the app. */
 .avail-add { align-self: flex-start; padding: 6px 12px; font-size: 13px; }
