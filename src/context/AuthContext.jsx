@@ -5,7 +5,12 @@ import { identify, resetAnalytics, trackLogIn, trackLogOut, trackSignUp } from "
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  // An admin "view as" tab caches its (read-only) doctor user in sessionStorage
+  // under a separate key, so it never overwrites the real "user" a signed-in
+  // admin has cached in localStorage in another tab.
   const [user, setUser] = useState(() => {
+    const rawView = sessionStorage.getItem("viewUser");
+    if (rawView) return JSON.parse(rawView);
     const raw = localStorage.getItem("user");
     return raw ? JSON.parse(raw) : null;
   });
@@ -17,7 +22,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       window.finishSplash?.();
     };
-    const token = localStorage.getItem("token");
+    const viewToken = sessionStorage.getItem("viewToken");
+    const token = viewToken || localStorage.getItem("token");
     if (!token) {
       done();
       return;
@@ -26,12 +32,22 @@ export const AuthProvider = ({ children }) => {
       .get("/auth/me")
       .then((r) => {
         setUser(r.data.user);
-        localStorage.setItem("user", JSON.stringify(r.data.user));
+        if (viewToken) {
+          sessionStorage.setItem("viewUser", JSON.stringify(r.data.user));
+        } else {
+          localStorage.setItem("user", JSON.stringify(r.data.user));
+        }
         identify(r.data.user);
       })
       .catch(() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        if (viewToken) {
+          sessionStorage.removeItem("viewToken");
+          sessionStorage.removeItem("viewAs");
+          sessionStorage.removeItem("viewUser");
+        } else {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
         setUser(null);
       })
       .finally(done);

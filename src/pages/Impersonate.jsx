@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 
 // Consumes an admin "View as" link: /impersonate#token=<jwt>&name=<clinic>.
 // The token is kept in the URL fragment (never sent to a server / logged) and
-// swapped in as this tab's auth token, then we boot fresh into the doctor view.
+// stashed in this tab's sessionStorage — not localStorage — so it never
+// collides with an admin's own signed-in session in another tab of the same
+// origin. Then we boot fresh into the doctor view.
 export default function Impersonate() {
   const [error, setError] = useState(false);
 
@@ -14,9 +16,9 @@ export default function Impersonate() {
       setError(true);
       return;
     }
-    localStorage.setItem("token", token);
-    localStorage.setItem("viewAs", name);
-    localStorage.removeItem("user"); // force AuthContext to re-fetch the doctor
+    sessionStorage.setItem("viewToken", token);
+    sessionStorage.setItem("viewAs", name);
+    sessionStorage.removeItem("viewUser"); // force AuthContext to re-fetch the doctor
     // Full navigation so the app re-initialises with the new token.
     window.location.replace("/doctor");
   }, []);

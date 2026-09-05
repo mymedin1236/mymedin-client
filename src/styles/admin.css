@@ -1,0 +1,82 @@
+/* Admin panel styles — scoped under .admin-app so these generic class names
+   (.card, .row, .muted, .tab, .chip, .error, .stat, ...) never leak into or
+   collide with the main app's styles.css, which defines the same names
+   differently. */
+.admin-app {
+  --navy: #14233c;
+  --blue: #3a72e3;
+  --ink: #1f2d3d;
+  --muted: #5d6f88;
+  --line: #e2e9f3;
+  --bg: #eef3fa;
+  --ok: #1a8a4f;
+  --bad: #c0392b;
+
+  min-height: 100vh;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+.admin-app * { box-sizing: border-box; }
+.admin-app .muted { color: var(--muted); }
+.admin-app .small { font-size: 13px; }
+.admin-app .row { display: flex; align-items: center; gap: 10px; }
+.admin-app .row.between { justify-content: space-between; }
+.admin-app .row.wrap, .admin-app .wrap { flex-wrap: wrap; }
+.admin-app .error {
+  background: #fdecea; color: var(--bad); border: 1px solid #f5c6c0;
+  padding: 8px 12px; border-radius: 8px; margin: 10px 0;
+}
+
+/* Auth */
+.admin-app .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.admin-app .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+.admin-app .auth-card { width: 100%; max-width: 360px; box-shadow: 0 20px 50px -28px rgba(20,35,60,.5); }
+.admin-app .auth-card h1 { margin: 0; font-size: 22px; color: var(--navy); }
+.admin-app .auth-card label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 14px; color: var(--muted); }
+.admin-app input, .admin-app select {
+  font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+}
+.admin-app button {
+  font: inherit; cursor: pointer; border: none; border-radius: 8px;
+  background: var(--blue); color: #fff; padding: 9px 14px; font-weight: 600;
+}
+.admin-app button:disabled { opacity: .6; cursor: default; }
+.admin-app .auth-card button { width: 100%; margin-top: 18px; }
+.admin-app button.ghost { background: transparent; color: var(--navy); border: 1px solid var(--line); }
+.admin-app button.tab { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.admin-app button.tab.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+.admin-app button.chip { background: #fff; color: var(--muted); border: 1px solid var(--line); padding: 5px 12px; border-radius: 999px; font-weight: 500; }
+.admin-app button.btn-sm { padding: 5px 12px; font-size: 13px; }
+.admin-app button.chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+.admin-app button.danger { background: var(--bad); }
+.admin-app button.link-danger {
+  background: transparent; color: var(--bad); border: none; padding: 2px 8px;
+  font-size: 16px; line-height: 1; font-weight: 700;
+}
+.admin-app button.link-danger:hover { background: #fdecea; border-radius: 6px; }
+
+/* Shell */
+.admin-app .topbar {
+  background: var(--navy); color: #fff; padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.admin-app .topbar .muted { color: #a9c2ea; }
+.admin-app .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+
+/* Stat cards */
+.admin-app .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 16px 0; }
+.admin-app .stat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.admin-app .stat.warn { border-color: #f0c2bc; background: #fef6f5; }
+.admin-app .stat-value { font-size: 28px; font-weight: 800; color: var(--navy); }
+.admin-app .stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* Table */
+.admin-app .table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.admin-app table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-app th, .admin-app td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: normal; }
+.admin-app th { background: #f7fafe; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; position: sticky; top: 0; }
+.admin-app tbody tr:hover { background: #f9fbfe; }
+.admin-app .nowrap { white-space: nowrap; }
+.admin-app .ok { color: var(--ok); font-weight: 600; }
+.admin-app .bad { color: var(--bad); font-weight: 600; }

@@ -38,13 +38,17 @@ import Agreement from "./pages/Agreement";
 import Impersonate from "./pages/Impersonate";
 import ImpersonationBanner from "./components/ImpersonationBanner";
 import Invoices from "./pages/Invoices";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Home() {
   const { user, loading } = useAuth();
   if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
   const home =
-    user.role === "doctor" || user.role === "assistant"
+    user.role === "admin"
+      ? "/admin/dashboard"
+      : user.role === "doctor" || user.role === "assistant"
       ? "/doctor"
       : user.role === "vendor"
       ? "/vendor"
@@ -78,7 +82,9 @@ function Shell({ children }) {
     return () => window.removeEventListener("association-changed", refresh);
   }, [user, items.length]);
 
-  if (!user) return children;
+  // Admin has its own full-page layout (topbar + tabs), not the
+  // patient/doctor/vendor sidebar chrome.
+  if (!user || user.role === "admin") return children;
 
   return (
     <div className="app-shell">
@@ -113,6 +119,15 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/impersonate" element={<Impersonate />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<Home />} />
         <Route
           path="/doctor"

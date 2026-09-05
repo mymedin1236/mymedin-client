@@ -3,13 +3,15 @@ import Icon from "./Icon";
 // Shown across the top whenever this tab is an admin "View as" (read-only)
 // session. Makes the impersonation obvious and offers a one-tap way out.
 export default function ImpersonationBanner() {
-  const viewAs = localStorage.getItem("viewAs");
+  const viewAs = sessionStorage.getItem("viewAs");
   if (viewAs === null) return null;
 
   const exit = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("viewAs");
+    // Only this tab's view session is cleared — an admin signed in elsewhere
+    // keeps their own (localStorage) session untouched.
+    sessionStorage.removeItem("viewToken");
+    sessionStorage.removeItem("viewUser");
+    sessionStorage.removeItem("viewAs");
     window.location.replace("/login");
   };
 

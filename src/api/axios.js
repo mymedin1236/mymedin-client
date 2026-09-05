@@ -24,7 +24,10 @@ const isStandalone = () =>
 api.interceptors.request.use(
   (config) => {
     if (!config.skipLoader) loadingStore.start();
-    const token = localStorage.getItem("token");
+    // An admin "view as" tab uses a per-tab read-only token (sessionStorage), so
+    // it never collides with an admin's own signed-in session (localStorage) in
+    // another tab of the same origin.
+    const token = sessionStorage.getItem("viewToken") || localStorage.getItem("token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
     // Tell the server how the app is being used (installed PWA vs browser).
     config.headers["X-Display-Mode"] = isStandalone() ? "standalone" : "browser";
@@ -44,8 +47,14 @@ api.interceptors.response.use(
   (err) => {
     if (!err.config?.skipLoader) loadingStore.done();
     if (err.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      if (sessionStorage.getItem("viewToken")) {
+        sessionStorage.removeItem("viewToken");
+        sessionStorage.removeItem("viewAs");
+        sessionStorage.removeItem("viewUser");
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     }
     return Promise.reject(err);
   }
