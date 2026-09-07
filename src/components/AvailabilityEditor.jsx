@@ -66,12 +66,14 @@ export default function AvailabilityEditor({ value = [], onChange }) {
                       value={b.start}
                       onChange={(t) => setTime(day, i, "start", t)}
                     />
-                    <span className="avail-dash">–</span>
-                    <TimeInput12h
-                      aria-label={`${day} closing time`}
-                      value={b.end}
-                      onChange={(t) => setTime(day, i, "end", t)}
-                    />
+                    <span className="avail-end-group">
+                      <span className="avail-dash">–</span>
+                      <TimeInput12h
+                        aria-label={`${day} closing time`}
+                        value={b.end}
+                        onChange={(t) => setTime(day, i, "end", t)}
+                      />
+                    </span>
                     {blocks.length > 1 && (
                       <button
                         type="button"
