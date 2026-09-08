@@ -12,7 +12,7 @@ const isStandalone = () =>
   window.navigator.standalone === true;
 
 // iOS Safari has no beforeinstallprompt — installs are manual via Share sheet.
-const isIos = () =>
+export const isIos = () =>
   /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
   (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
 

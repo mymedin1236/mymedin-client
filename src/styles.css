@@ -534,6 +534,22 @@ a:hover { text-decoration: underline; }
 .bell-toggle:hover:not(:disabled) { background: var(--b-100); }
 .bell-empty { padding: 18px 14px; color: var(--muted); font-size: 14px; }
 
+/* Shown when the OS/browser has blocked notification permission for this site */
+.bell-push-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 14px 0;
+  padding: 8px 10px;
+  background: #fdf6ec;
+  border: 1px solid #f0dcb8;
+  color: #8a5a1b;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.bell-push-warning .material-symbols-outlined { color: #b8791a; flex: none; }
+
 /* Actions bar (Mark all read / Clear all) */
 .bell-actions {
   display: flex;

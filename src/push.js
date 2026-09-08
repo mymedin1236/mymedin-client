@@ -9,17 +9,19 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 // Request permission and register a push subscription. Best-effort; safe to call repeatedly.
+// Resolves to a status so callers can tell the user why it didn't work, instead of
+// failing silently: "subscribed" | "denied" | "unsupported" | "unconfigured" | "error".
 export async function subscribeToPush() {
   try {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    if (Notification.permission === "denied") return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return "unsupported";
+    if (Notification.permission === "denied") return "denied";
 
     const { data } = await api.get("/push/public-key", { skipLoader: true });
-    if (!data?.publicKey) return; // push not configured on server
+    if (!data?.publicKey) return "unconfigured"; // push not configured on server
 
     if (Notification.permission === "default") {
       const perm = await Notification.requestPermission();
-      if (perm !== "granted") return;
+      if (perm !== "granted") return "denied";
     }
 
     const reg = await navigator.serviceWorker.ready;
@@ -37,8 +39,9 @@ export async function subscribeToPush() {
       { endpoint: json.endpoint, keys: json.keys },
       { skipLoader: true }
     );
+    return "subscribed";
   } catch {
-    /* ignore — push is a best-effort enhancement */
+    return "error"; // push is a best-effort enhancement — caller decides whether to surface this
   }
 }
 

@@ -17,6 +17,9 @@ export const NotificationsProvider = ({ children }) => {
   const [enabled, setEnabledState] = useState(
     () => localStorage.getItem("notifEnabled") !== "false"
   );
+  // True when the OS/browser has blocked notification permission for this site —
+  // surfaced in the bell UI instead of failing silently.
+  const [pushBlocked, setPushBlocked] = useState(false);
   const prevUnread = useRef(0);
   const firstLoad = useRef(true);
   const enabledRef = useRef(enabled);
@@ -101,7 +104,8 @@ export const NotificationsProvider = ({ children }) => {
       return;
     }
     refresh();
-    if (enabled) subscribeToPush(); // register background push (best-effort)
+    // Register background push (best-effort) and surface it if the OS has it blocked.
+    if (enabled) subscribeToPush().then((status) => setPushBlocked(status === "denied"));
     const id = setInterval(refresh, 20000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,8 +115,12 @@ export const NotificationsProvider = ({ children }) => {
   const setEnabled = (value) => {
     setEnabledState(value);
     localStorage.setItem("notifEnabled", value ? "true" : "false");
-    if (value) subscribeToPush();
-    else unsubscribeFromPush();
+    if (value) {
+      subscribeToPush().then((status) => setPushBlocked(status === "denied"));
+    } else {
+      setPushBlocked(false);
+      unsubscribeFromPush();
+    }
   };
 
   const markAllRead = async () => {
@@ -209,6 +217,7 @@ export const NotificationsProvider = ({ children }) => {
         acknowledge,
         enabled,
         setEnabled,
+        pushBlocked,
       }}
     >
       {children}

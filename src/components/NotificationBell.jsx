@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../context/NotificationsContext";
 import Icon from "./Icon";
 import { trackNotificationViewed, trackNotificationDismissed } from "../utils/analytics";
+import { isIos } from "../utils/pwaInstall";
+
+// Where to tell the user to look to un-block notifications — differs by platform.
+const blockedHint = () =>
+  isIos()
+    ? "Notifications are blocked. Enable them in iPhone Settings → MyMedin → Notifications, then reopen the app."
+    : "Notifications are blocked in your browser. Enable them from your browser's site settings for this app.";
 
 const timeAgo = (d) => {
   const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
@@ -37,8 +44,20 @@ const routeFor = (n) => {
 };
 
 export default function NotificationBell() {
-  const { items, unreadCount, markAllRead, markRead, markUnread, dismiss, acknowledge, hasMore, loadMore, enabled, setEnabled } =
-    useNotifications();
+  const {
+    items,
+    unreadCount,
+    markAllRead,
+    markRead,
+    markUnread,
+    dismiss,
+    acknowledge,
+    hasMore,
+    loadMore,
+    enabled,
+    setEnabled,
+    pushBlocked,
+  } = useNotifications();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -73,6 +92,13 @@ export default function NotificationBell() {
                 {enabled ? "On" : "Off"}
               </button>
             </div>
+
+            {enabled && pushBlocked && (
+              <div className="bell-push-warning">
+                <Icon name="notifications_off" size={16} />
+                <span>{blockedHint()}</span>
+              </div>
+            )}
 
             {unreadCount > 0 && (
               <div className="bell-actions">
