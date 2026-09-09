@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import MobileNav from "./components/MobileNav";
 import ProfileMenu from "./components/ProfileMenu";
+import ClinicSwitcher from "./components/ClinicSwitcher";
 import NotificationBell from "./components/NotificationBell";
 import { useNotifications } from "./context/NotificationsContext";
 import Icon from "./components/Icon";
@@ -23,6 +24,7 @@ import ClientTreatments from "./pages/ClientTreatments";
 import Family from "./pages/Family";
 import Clients from "./pages/Clients";
 import Staff from "./pages/Staff";
+import MyClinics from "./pages/MyClinics";
 import ClientLedger from "./pages/ClientLedger";
 import Appointments from "./pages/Appointments";
 import Treatments from "./pages/Treatments";
@@ -96,6 +98,7 @@ function Shell({ children }) {
             <Icon name="stethoscope" /> MyMedin
           </Link>
           <div className="row gap">
+            {user.role === "assistant" && <ClinicSwitcher />}
             <NotificationBell />
             <ProfileMenu />
           </div>
@@ -198,6 +201,14 @@ export default function App() {
           element={
             <ProtectedRoute role="doctor">
               <Staff />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-clinics"
+          element={
+            <ProtectedRoute role="assistant">
+              <MyClinics />
             </ProtectedRoute>
           }
         />

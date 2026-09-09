@@ -14,13 +14,16 @@ export const ROLE_LINKS = {
     { to: "/settings", icon: "settings", label: "Settings" },
     { to: "/agreement", icon: "handshake", label: "E-Agreement" },
   ],
-  // Assistant: same clinic tools as the doctor, minus staff management.
+  // Assistant: same clinic tools as the doctor, minus staff management, plus
+  // their own multi-clinic membership page (not shown to a doctor — they only
+  // ever have the one clinic, themselves).
   assistant: [
     { to: "/doctor", icon: "today", label: "Today's Schedule" },
     { to: "/appointments", icon: "calendar_month", label: "Appointments" },
     { to: "/clients", icon: "group", label: "Patients" },
     { to: "/dependents", icon: "escalator_warning", label: "Dependents" },
     { to: "/settings", icon: "settings", label: "Settings" },
+    { to: "/my-clinics", icon: "storefront", label: "My clinics" },
   ],
   client: [
     { to: "/client", icon: "home", label: "Home" },

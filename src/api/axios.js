@@ -31,6 +31,10 @@ api.interceptors.request.use(
     if (token) config.headers.Authorization = `Bearer ${token}`;
     // Tell the server how the app is being used (installed PWA vs browser).
     config.headers["X-Display-Mode"] = isStandalone() ? "standalone" : "browser";
+    // An assistant may be engaged with several clinics — tell the server which
+    // one is active so clinic-scoped data (and notifications) resolve correctly.
+    const activeClinic = localStorage.getItem("activeClinicId");
+    if (activeClinic) config.headers["X-Active-Clinic"] = activeClinic;
     return config;
   },
   (err) => {
@@ -54,6 +58,7 @@ api.interceptors.response.use(
       } else {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("activeClinicId");
       }
     }
     return Promise.reject(err);

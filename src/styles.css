@@ -266,6 +266,51 @@ a:hover { text-decoration: underline; }
   border-radius: 0;
 }
 .profile-item:hover:not(:disabled) { background: var(--b-50); }
+.profile-item.on { color: var(--primary); font-weight: 600; }
+
+/* Clinic switcher (assistant top bar) — always shows the active clinic's name,
+   not just an icon, so which clinic is active is never hidden behind a menu. */
+.clinic-switcher { position: relative; }
+.clinic-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--b-50);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  max-width: 220px;
+}
+.clinic-switcher-btn:hover:not(:disabled) { background: var(--b-100); }
+.clinic-switcher-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 41;
+  min-width: 220px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(31, 45, 61, 0.16);
+  overflow: hidden;
+}
+.clinic-switcher-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fdf6ec;
+  color: #8a5a1b;
+  border: 1px solid #f0dcb8;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* Association bar (doctor profile) */
 .assoc-bar {

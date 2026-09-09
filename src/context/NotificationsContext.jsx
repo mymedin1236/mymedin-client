@@ -93,6 +93,18 @@ export const NotificationsProvider = ({ children }) => {
     return () => navigator.serviceWorker.removeEventListener("message", onMessage);
   }, [refresh]);
 
+  // An assistant switched their active clinic — refetch immediately instead of
+  // waiting for the next poll, and reset the unread baseline so the switch
+  // itself doesn't read as "new notifications arrived" and trigger a chime.
+  useEffect(() => {
+    const onClinicChanged = () => {
+      firstLoad.current = true;
+      refresh();
+    };
+    window.addEventListener("clinic-changed", onClinicChanged);
+    return () => window.removeEventListener("clinic-changed", onClinicChanged);
+  }, [refresh]);
+
   useEffect(() => {
     if (!user) {
       setItems([]);
