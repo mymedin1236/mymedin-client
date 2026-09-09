@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { formatDate } from "../utils/date";
 import Icon from "../components/Icon";
+import CopyValue from "../components/CopyValue";
 import { SkeletonTable } from "../components/Skeleton";
 
 const money = (n) => `Rs ${(Number(n) || 0).toLocaleString()}`;
@@ -12,36 +13,6 @@ const BANK = {
   title: "Hamza Mansoor",
   account: "04810010078559090018",
 };
-
-// The account number: blue, underlined, one-tap copy — so the doctor can paste
-// it straight into their banking app.
-function AccountNumber({ value }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-    } catch {
-      // Fallback for browsers without the async clipboard API
-      const ta = document.createElement("textarea");
-      ta.value = value;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); } catch { /* ignore */ }
-      document.body.removeChild(ta);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1600);
-  };
-  return (
-    <button type="button" className="acct-copy" onClick={copy} title="Tap to copy">
-      <span className="acct-num">{value}</span>
-      <Icon name={copied ? "check" : "content_copy"} size={16} />
-      <span className="acct-copied">{copied ? "Copied" : "Copy"}</span>
-    </button>
-  );
-}
 
 // Turn a "YYYY-MM" billing month into "August 2026".
 const monthLabel = (ym) => {
@@ -86,7 +57,7 @@ export default function Invoices() {
         <div className="pay-head icon"><Icon name="account_balance" size={18} /> Pay to</div>
         <div className="pay-row"><span className="pay-label">Bank</span><span className="pay-value">{BANK.name}</span></div>
         <div className="pay-row"><span className="pay-label">Account title</span><span className="pay-value">{BANK.title}</span></div>
-        <div className="pay-row"><span className="pay-label">Account no.</span><AccountNumber value={BANK.account} /></div>
+        <div className="pay-row"><span className="pay-label">Account no.</span><CopyValue value={BANK.account} /></div>
         <p className="pay-note muted">After paying, your invoice is marked <strong>Paid</strong> once we confirm the transfer.</p>
       </div>
 

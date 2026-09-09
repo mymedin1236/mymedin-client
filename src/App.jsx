@@ -25,6 +25,7 @@ import Family from "./pages/Family";
 import Clients from "./pages/Clients";
 import Staff from "./pages/Staff";
 import MyClinics from "./pages/MyClinics";
+import Share from "./pages/Share";
 import ClientLedger from "./pages/ClientLedger";
 import Appointments from "./pages/Appointments";
 import Treatments from "./pages/Treatments";
@@ -201,6 +202,14 @@ export default function App() {
           element={
             <ProtectedRoute role="doctor">
               <Staff />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/share"
+          element={
+            <ProtectedRoute role={["doctor", "assistant"]}>
+              <Share />
             </ProtectedRoute>
           }
         />

@@ -2462,6 +2462,16 @@ h2.icon { gap: 8px; }
 }
 .acct-copied { font-size: 12px; font-weight: 600; }
 
+/* QR share box (doctor/assistant "Share" page) */
+.qr-box {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(20, 30, 50, 0.06);
+  margin-bottom: 4px;
+}
+
 /* Reschedule panel inside the Today's-Schedule appointment modal */
 .resched-panel { margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
 
