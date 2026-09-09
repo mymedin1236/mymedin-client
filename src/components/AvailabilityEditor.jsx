@@ -4,10 +4,27 @@ import { formatTime12 } from "../utils/time";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Per-day clinic hours editor. `value` is a flat array of { day, start, end }.
-// A day may have MORE THAN ONE block (e.g. a morning 10:00–13:30 and an evening
-// 16:00–21:00 session); each is one entry sharing the same `day`.
-export default function AvailabilityEditor({ value = [], onChange }) {
+// Per-day clinic hours editor. `value` is a flat array of
+// { day, start, end, appointmentType }.
+//
+// A day may have MORE THAN ONE bracket (e.g. a morning 10:00–13:30 and an
+// evening 16:00–21:00 session); each is one entry sharing the same `day`. Each
+// bracket may also name an APPOINTMENT TYPE, which decides how that bracket is
+// divided: 12:00–15:00 as 20-minute consultations, 18:00–21:00 as 90-minute
+// procedures. A bracket left on "Default" uses the clinic's default slot length,
+// exactly as every clinic worked before types existed.
+export default function AvailabilityEditor({ value = [], onChange, types = [] }) {
+  // Retired types stay selectable only where they're already in use, so a
+  // bracket never silently loses its type just because it was retired.
+  const activeTypes = types.filter((t) => t.active !== false);
+  const inUse = new Set(value.map((v) => String(v.appointmentType || "")));
+  const optionsFor = (selected) => {
+    const list = [...activeTypes];
+    for (const t of types) {
+      if (t.active === false && (inUse.has(String(t._id)) || String(t._id) === String(selected))) list.push(t);
+    }
+    return list;
+  };
   const byDay = {};
   value.forEach((v) => {
     (byDay[v.day] ||= []).push(v);
@@ -26,6 +43,11 @@ export default function AvailabilityEditor({ value = [], onChange }) {
   const toggle = (day) =>
     emit(day, byDay[day]?.length ? [] : [{ day, start: "09:00", end: "17:00" }]);
   const addBlock = (day) => emit(day, [...(byDay[day] || []), { day, start: "16:00", end: "21:00" }]);
+  const setType = (day, idx, typeId) =>
+    emit(
+      day,
+      (byDay[day] || []).map((b, i) => (i === idx ? { ...b, appointmentType: typeId || undefined } : b))
+    );
   const removeBlock = (day, idx) => emit(day, (byDay[day] || []).filter((_, i) => i !== idx));
   const setTime = (day, idx, field, t) =>
     emit(day, (byDay[day] || []).map((b, i) => (i === idx ? { ...b, [field]: t } : b)));
@@ -74,6 +96,21 @@ export default function AvailabilityEditor({ value = [], onChange }) {
                         onChange={(t) => setTime(day, i, "end", t)}
                       />
                     </span>
+                    {types.length > 0 && (
+                      <select
+                        className="avail-type"
+                        aria-label={`${day} appointment type for ${b.start}–${b.end}`}
+                        value={b.appointmentType || ""}
+                        onChange={(e) => setType(day, i, e.target.value)}
+                      >
+                        <option value="">Default slot length</option>
+                        {optionsFor(b.appointmentType).map((t) => (
+                          <option key={t._id} value={t._id}>
+                            {t.name} · {t.duration} min{t.active === false ? " (retired)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     {blocks.length > 1 && (
                       <button
                         type="button"

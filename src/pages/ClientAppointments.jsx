@@ -22,6 +22,9 @@ export default function ClientAppointments() {
   const [showRequest, setShowRequest] = useState(false);
   const [reqFor, setReqFor] = useState(""); // "" = myself, else dependent id
   const [reqDate, setReqDate] = useState("");
+  // The slot the patient tapped — carries which kind of appointment that
+  // bracket runs, so the request is booked as that type at its own length.
+  const [reqSlot, setReqSlot] = useState(null);
   const [reqReason, setReqReason] = useState("");
   const [reqError, setReqError] = useState("");
   const [reqBusy, setReqBusy] = useState(false);
@@ -64,7 +67,12 @@ export default function ClientAppointments() {
     if (!reqDate) return setReqError("Please pick a time slot.");
     setReqBusy(true);
     try {
-      await api.post("/appointments/request", { date: reqDate, reason: reqReason, for: reqFor || undefined });
+      await api.post("/appointments/request", {
+        date: reqDate,
+        reason: reqReason,
+        for: reqFor || undefined,
+        appointmentType: reqSlot?.typeId || undefined,
+      });
       trackAppointment("requested", { doctor_id: assoc?.doctor?._id });
       setShowRequest(false);
       setReqSent(true);
@@ -133,6 +141,11 @@ export default function ClientAppointments() {
                     <span className="icon"><Icon name="child_care" size={16} /> For {a.client.name}</span>
                   )}
                   <span className="icon"><Icon name="person" size={16} /> Dr. {a.doctor?.name}</span>
+                  {a.typeName && (
+                    <span className="icon"><Icon name="category" size={16} /> {a.typeName}
+                      {a.duration ? <span className="muted"> · {a.duration} min</span> : null}
+                    </span>
+                  )}
                   {a.reason && (
                     <span className="icon"><Icon name="medical_services" size={16} /> {a.reason}</span>
                   )}
@@ -178,7 +191,13 @@ export default function ClientAppointments() {
                   onChange={(e) => setReqReason(e.target.value)}
                 />
               </label>
-              <SlotPicker value={reqDate} onChange={(iso) => setReqDate(iso)} />
+              <SlotPicker
+                value={reqDate}
+                onChange={(iso, slot) => {
+                  setReqDate(iso);
+                  setReqSlot(slot);
+                }}
+              />
               <div className="row gap">
                 <button type="submit" className="icon" disabled={reqBusy}>
                   <Icon name="schedule_send" size={18} /> {reqBusy ? "Sending…" : "Send request"}

@@ -73,6 +73,7 @@ export default function DoctorDashboard() {
   const [busy, setBusy] = useState(false);
   const [reschedOpen, setReschedOpen] = useState(false); // reschedule panel in the modal
   const [reschedDate, setReschedDate] = useState(null); // chosen new slot (ISO)
+  const [reschedSlot, setReschedSlot] = useState(null); // ...and its appointment type
   const [dismissEnroll, setDismissEnroll] = useState(false); // hide discovery reminder
   const [step, setStep] = useState(15); // clinic's slot length (minutes)
   // Ticks every 30s so the waiting-time counters advance without a data refetch.
@@ -225,6 +226,7 @@ export default function DoctorDashboard() {
     try {
       const { data } = await api.put(`/appointments/${selected._id}`, {
         date: reschedDate,
+        appointmentType: reschedSlot?.typeId || undefined,
         status: "scheduled",
         version: selected.__v,
       });
@@ -554,7 +556,10 @@ export default function DoctorDashboard() {
                     <SlotPicker
                       value={reschedDate}
                       excludeId={selected._id}
-                      onChange={(iso) => setReschedDate(iso)}
+                      onChange={(iso, slot) => {
+                        setReschedDate(iso);
+                        setReschedSlot(slot);
+                      }}
                     />
                     <div className="row gap" style={{ marginTop: 8, flexWrap: "wrap" }}>
                       <button type="button" className="icon" disabled={busy || !reschedDate} onClick={submitReschedule}>

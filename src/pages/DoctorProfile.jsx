@@ -205,11 +205,20 @@ export default function DoctorProfile() {
               </button>
             </div>
             <div className="row gap" style={{ flexWrap: "wrap", marginTop: 8 }}>
-              {doctor.availability.map((slot, i) => (
-                <span key={i} className="tag">
-                  {slot.day} {fmtTime(slot.start, show24)}–{fmtTime(slot.end, show24)}
-                </span>
-              ))}
+              {doctor.availability.map((slot, i) => {
+                // A block of hours may run a specific kind of appointment at its
+                // own length — show that, so patients know what the evening
+                // block is for before they open the booking screen.
+                const t = (doctor.appointmentTypes || []).find(
+                  (x) => String(x._id) === String(slot.appointmentType)
+                );
+                return (
+                  <span key={i} className="tag">
+                    {slot.day} {fmtTime(slot.start, show24)}–{fmtTime(slot.end, show24)}
+                    {t && <em className="tag-type">{t.name} · {t.duration} min</em>}
+                  </span>
+                );
+              })}
             </div>
           </>
         )}
