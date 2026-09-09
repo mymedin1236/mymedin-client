@@ -2454,11 +2454,17 @@ h2.icon { gap: 8px; }
   display: inline-flex; align-items: center; gap: 8px;
   padding: 4px 6px; border: none; background: transparent; cursor: pointer;
   color: var(--primary); border-radius: 6px;
+  max-width: 100%;
 }
 .acct-copy:hover { background: var(--b-50); }
 .acct-num {
   font-weight: 700; letter-spacing: .3px;
   text-decoration: underline; text-underline-offset: 3px;
+  /* A share link has no spaces to wrap at — without this it overflows the
+     card/page on narrow screens instead of wrapping (or shrinking, since a
+     flex item's default min-width is its unbroken content width). */
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .acct-copied { font-size: 12px; font-weight: 600; }
 
