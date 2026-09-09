@@ -1490,6 +1490,60 @@ a.btn-danger-soft {
 .time-input-12h-sep { color: var(--muted); }
 
 /* Per-date schedule exceptions (early leave / day off) */
+/* The appointment type a public clinic-hours tag runs. */
+.tag-type { font-style: normal; opacity: 0.75; margin-left: 6px; }
+
+/* Appointment types editor (Settings) */
+.types-editor { display: flex; flex-direction: column; gap: 12px; }
+.type-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border: 1px solid var(--b-200, #e2e5ea);
+  border-radius: 8px;
+  background: var(--b-50, #f7f8fa);
+}
+.type-row.retired { opacity: 0.6; }
+.type-row.editing { align-items: flex-end; }
+.type-row label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.type-row label input, .type-row label select { width: auto; }
+.type-name { font-weight: 600; color: var(--heading); display: flex; align-items: center; gap: 6px; }
+.type-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fdeceb;
+  color: #b42318;
+}
+.type-len {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3538cd;
+}
+.type-actions { margin-left: auto; flex-wrap: wrap; }
+.type-add { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.type-add label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.type-add input, .type-add select { width: auto; }
+
+/* Which appointment type a block of clinic hours runs. */
+.avail-type { width: auto; font-size: 13px; }
+
+/* A dated exception can hold several typed brackets. */
+.override-blocks { display: flex; flex-wrap: wrap; gap: 6px; }
+.override-type {
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.75;
+  margin-left: 6px;
+}
+
 .override-editor { display: flex; flex-direction: column; gap: 12px; }
 .override-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .override-row {
@@ -1623,6 +1677,42 @@ a.btn-danger-soft {
 }
 .slot:disabled:not(.booked) { opacity: 0.4; cursor: not-allowed; }
 .slot.past { opacity: 0.4; }
+/* Slot length shown under the time, so a 20-min and a 90-min slot are
+   distinguishable at a glance in a clinic that runs several kinds. */
+.slot-len {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.75;
+  margin-top: 1px;
+}
+
+/* One labelled section per appointment type, when the day runs more than one. */
+.slot-group + .slot-group { margin-top: 10px; }
+.slot-group-head {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--heading);
+}
+.slot-group-head .muted { font-weight: 400; }
+
+/* Chips to narrow the grid to a single appointment type. */
+.slot-type-filter { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.slot-type-chip {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--card, #fff);
+  color: var(--heading);
+  border: 1px solid var(--b-200, #e2e5ea);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.slot-type-chip:hover { border-color: var(--primary); color: var(--primary); }
+.slot-type-chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.slot-type-chip.on .muted { color: rgba(255, 255, 255, 0.8); }
+
 /* Read-only availability view (e.g. public doctor profile): show, don't pick. */
 .slot-grid.readonly .slot { cursor: default; pointer-events: none; }
 

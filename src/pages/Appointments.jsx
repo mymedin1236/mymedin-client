@@ -8,7 +8,7 @@ import SlotPicker from "../components/SlotPicker";
 import ClientSearchSelect from "../components/ClientSearchSelect";
 import { trackAppointment } from "../utils/analytics";
 
-const empty = { client: "", date: "", reason: "", notes: "", status: "scheduled" };
+const empty = { client: "", date: "", reason: "", notes: "", status: "scheduled", appointmentType: "" };
 const statusLabel = (s) => (s === "no_show" ? "No-show" : s === "pending" ? "Pending" : s);
 
 export default function Appointments() {
@@ -176,6 +176,7 @@ export default function Appointments() {
       reason: a.reason || "",
       notes: a.notes || "",
       status: a.status,
+      appointmentType: a.appointmentType || "",
       version: a.__v, // for optimistic-concurrency checks on save
     });
   };
@@ -277,6 +278,11 @@ export default function Appointments() {
         <span className="icon"><Icon name="person" size={16} /> {a.client?.name}</span>
         {a.client?.phone && (
           <span className="icon"><Icon name="call" size={16} /> {a.client.phone}</span>
+        )}
+        {a.typeName && (
+          <span className="icon"><Icon name="category" size={16} /> {a.typeName}
+            {a.duration ? <span className="muted"> · {a.duration} min</span> : null}
+          </span>
         )}
         {a.reason && (
           <span className="icon"><Icon name="medical_services" size={16} /> {a.reason}</span>
@@ -465,7 +471,9 @@ export default function Appointments() {
               initialDay={createDay}
               excludeId={editingId}
               allowPast={!!editingId}
-              onChange={(iso) => setForm((f) => ({ ...f, date: iso }))}
+              onChange={(iso, slot) =>
+                setForm((f) => ({ ...f, date: iso, appointmentType: slot?.typeId || "" }))
+              }
             />
           </div>
           <label>

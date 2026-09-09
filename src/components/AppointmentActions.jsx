@@ -24,6 +24,8 @@ export default function AppointmentActions({ appointment, onChanged }) {
 
   const [reschedOpen, setReschedOpen] = useState(false);
   const [reschedDate, setReschedDate] = useState(a.date);
+  // Moving into a different bracket re-types the appointment (and its length).
+  const [reschedSlot, setReschedSlot] = useState(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -75,7 +77,10 @@ export default function AppointmentActions({ appointment, onChanged }) {
       return setErr("Appointment cannot be in the past.");
     setBusy(true);
     try {
-      await api.patch(`/appointments/${a._id}/reschedule`, { date: reschedDate });
+      await api.patch(`/appointments/${a._id}/reschedule`, {
+        date: reschedDate,
+        appointmentType: reschedSlot?.typeId || undefined,
+      });
       trackAppointment("rescheduled", { appointment_id: a._id, actor: "patient" });
       setReschedOpen(false);
       onChanged?.();
@@ -167,7 +172,14 @@ export default function AppointmentActions({ appointment, onChanged }) {
                 {a.reason ? `${a.reason} — ` : ""}with Dr. {a.doctor?.name} — currently {formatDateTime(a.date)}
               </p>
               {err && <div className="error">{err}</div>}
-              <SlotPicker value={reschedDate} excludeId={a._id} onChange={(iso) => setReschedDate(iso)} />
+              <SlotPicker
+                value={reschedDate}
+                excludeId={a._id}
+                onChange={(iso, slot) => {
+                  setReschedDate(iso);
+                  setReschedSlot(slot);
+                }}
+              />
               <div className="row gap">
                 <button type="submit" className="icon" disabled={busy}>
                   <Icon name="check" size={18} /> {busy ? "Saving…" : "Confirm reschedule"}

@@ -69,7 +69,7 @@ export default function ClientLedger() {
   const [editTreatVersion, setEditTreatVersion] = useState(undefined);
   // Schedule-appointment modal
   const [showAppt, setShowAppt] = useState(false);
-  const [apptForm, setApptForm] = useState({ reason: "", date: "", notes: "" });
+  const [apptForm, setApptForm] = useState({ reason: "", date: "", notes: "", appointmentType: "" });
   const [apptError, setApptError] = useState("");
   const [apptShare, setApptShare] = useState(null); // { whatsappUrl } after scheduling
 
@@ -145,6 +145,7 @@ export default function ClientLedger() {
         reason: apptForm.reason,
         notes: apptForm.notes,
         date: apptForm.date, // already an ISO instant from the slot picker
+        appointmentType: apptForm.appointmentType || undefined,
       });
       trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "doctor" });
       setShowAppt(false);
@@ -626,7 +627,9 @@ export default function ClientLedger() {
               </label>
               <SlotPicker
                 value={apptForm.date}
-                onChange={(iso) => setApptForm({ ...apptForm, date: iso })}
+                onChange={(iso, slot) =>
+                  setApptForm({ ...apptForm, date: iso, appointmentType: slot?.typeId || "" })
+                }
               />
               <div className="row gap">
                 <button type="submit" className="icon"><Icon name="event" size={18} /> Schedule</button>

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Icon from "../components/Icon";
 import AvailabilityEditor from "../components/AvailabilityEditor";
 import DayOverridesEditor from "../components/DayOverridesEditor";
+import AppointmentTypesEditor from "../components/AppointmentTypesEditor";
 
 const DEFAULT_HOURS = ["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => ({
   day,
@@ -28,6 +29,9 @@ export default function Settings() {
   const [slotDurationBase, setSlotDurationBase] = useState(15);
   const [dayOverrides, setDayOverrides] = useState([]);
   const [dayOverridesBase, setDayOverridesBase] = useState([]);
+  // Appointment types save themselves as they're edited (each is its own
+  // record), so unlike the sections above they need no dirty/baseline pair.
+  const [types, setTypes] = useState([]);
   const [coords, setCoords] = useState(null);
   const [coordsBase, setCoordsBase] = useState(null);
 
@@ -53,6 +57,7 @@ export default function Settings() {
         setSlotDurationBase(data.slotDuration || 15);
         setDayOverrides(data.dayOverrides || []);
         setDayOverridesBase(data.dayOverrides || []);
+        setTypes(data.appointmentTypes || []);
         const c = data.location?.coordinates
           ? { latitude: data.location.coordinates[1], longitude: data.location.coordinates[0] }
           : null;
@@ -171,23 +176,37 @@ export default function Settings() {
 
       {error && <div className="error">{error}</div>}
 
+      {/* Appointment types */}
+      <div className="card">
+        <h3 className="icon"><Icon name="category" size={18} /> Appointment types</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          The kinds of appointment you offer, each with its own slot length — for
+          example Consultation 20 minutes, PRP session 40 minutes, Hair transplant
+          90 minutes. Once you've added them, assign one to each block of clinic
+          hours below and that block is divided into slots of that length.
+        </p>
+        <AppointmentTypesEditor types={types} onChange={setTypes} />
+      </div>
+
       {/* Clinic hours */}
       <div className="card">
         <h3 className="icon"><Icon name="schedule" size={18} /> Clinic hours</h3>
         <p className="muted" style={{ marginTop: 0 }}>
           Set opening and closing times for each day you're open. These control the
-          time slots you and your patients can book.
+          time slots you and your patients can book. Add more than one block to a
+          day to run different kinds of appointment at different times — say
+          consultations from 12–3 and procedures from 6–9.
         </p>
-        <AvailabilityEditor value={availability} onChange={setAvailability} />
+        <AvailabilityEditor value={availability} onChange={setAvailability} types={types} />
         {saveRow("hours", hoursDirty, saveHours, () => setAvailability(availabilityBase))}
       </div>
 
       {/* Slot length */}
       <div className="card">
-        <h3 className="icon"><Icon name="timer" size={18} /> Appointment slot length</h3>
+        <h3 className="icon"><Icon name="timer" size={18} /> Default slot length</h3>
         <p className="muted" style={{ marginTop: 0 }}>
-          How long each bookable time slot is. Clinic hours are split into slots of
-          this length for you and your patients.
+          Used for any block of clinic hours you haven't given an appointment type.
+          Blocks that do have a type are split using that type's own length instead.
         </p>
         <label style={{ maxWidth: 260 }}>
           Slot duration
@@ -211,7 +230,7 @@ export default function Settings() {
           day, or a day off. Patients won't be able to book outside the adjusted
           window for that date. Past dates are cleared automatically.
         </p>
-        <DayOverridesEditor value={dayOverrides} onChange={setDayOverrides} />
+        <DayOverridesEditor value={dayOverrides} onChange={setDayOverrides} types={types} />
         {saveRow("overrides", overridesDirty, saveOverrides, () => setDayOverrides(dayOverridesBase))}
       </div>
 
