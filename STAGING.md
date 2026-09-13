@@ -41,36 +41,50 @@ npm run build:staging   # = vite build --mode staging, reads .env.staging
 
 ## Creating the Vercel project (one time)
 
-The Vercel CLI here is logged out, so step 1 has to be done by a human.
+Do this in the Vercel dashboard, not the CLI: connecting a Git repo, choosing a
+production branch and setting deployment protection are all dashboard-only
+settings, and the CLI cannot configure them.
+
+**1. Create the project.** Add New > Project > Import Git Repository >
+`mymedin1236/mymedin-client`. Vercel allows the same repo in several projects,
+which is what we want. Name it `mymedin-client-staging`.
+
+**2. Settings > Git > Production Branch: `staging`.** This is the important one.
+It makes a push to `staging` a *production* deploy of the staging project, which
+gives a stable URL. Left on `main`, staging would only ever produce per-commit
+preview URLs — no good for a CORS allowlist, a PWA install, or sharing.
+
+**3. Settings > Build & Development > Build Command: `npm run build:staging`.**
+With that, staging needs **no environment variables at all**: `.env.staging` in
+the repo supplies them, so the deploy is reproducible from the repo alone.
+(Leaving the default `npm run build` and setting `VITE_APP_ENV=staging` in
+Vercel is verified to work identically. Pick one; don't do both.)
+
+**4. Stop the two projects building each other's branches.** With one repo in
+two projects, *every* push builds in *both* — a push to `staging` also makes a
+throwaway preview in the production project, and vice versa. That wastes build
+minutes and, worse, produces production-project URLs serving staging commits.
+Set Settings > Git > Ignored Build Step to "Run my Bash snippet" in each:
 
 ```sh
-cd mymedin-client
-npx vercel login                    # opens a browser
-npx vercel link --project mymedin-client-staging   # creates/links the project
+# in mymedin-client (production project)
+[ "$VERCEL_GIT_COMMIT_REF" = "main" ] && exit 1 || exit 0
+
+# in mymedin-client-staging
+[ "$VERCEL_GIT_COMMIT_REF" = "staging" ] && exit 1 || exit 0
 ```
 
-Then in the project's **Settings**:
+Vercel's convention is inverted on purpose: **exit 1 builds, exit 0 skips**.
 
-1. **Git** — connect the `mymedin1236/mymedin-client` repo and set the
-   *Production Branch* to `staging`. This is the important one: it makes a push
-   to `staging` a production deploy *of the staging project*, giving a stable
-   URL instead of a per-commit preview URL.
-2. **Build & Development Settings** — set the Build Command to
-   `npm run build:staging`. With that, staging needs **no environment variables
-   at all** — `.env.staging` in the repo supplies them, so the deployment is
-   reproducible from the repo alone.
-   (The alternative — leaving the build command as `npm run build` and setting
-   `VITE_APP_ENV=staging` in Vercel — is verified to work identically. Pick one;
-   don't do both.)
-3. **Deployment Protection** — turn on Vercel Authentication (or a password).
-   Staging is a working copy of a medical app; it should not be publicly
-   reachable, and this also keeps it out of search engines regardless of
-   `robots.txt`.
+**5. Settings > Deployment Protection > Vercel Authentication: on.** Staging is
+a working copy of a medical app; it should not be publicly reachable. This also
+keeps it out of search engines whatever `robots.txt` says.
 
-Deploy:
+## Deploying
 
 ```sh
-git push -u origin staging
+git push origin main        # production; behaviour unchanged by this work
+git push -u origin staging  # creates the branch and the first staging deploy
 ```
 
 ## Before staging actually works end to end
