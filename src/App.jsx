@@ -10,6 +10,7 @@ import NotificationBell from "./components/NotificationBell";
 import { useNotifications } from "./context/NotificationsContext";
 import Icon from "./components/Icon";
 import GlobalLoader from "./components/GlobalLoader";
+import EnvBadge from "./components/EnvBadge";
 import UpdatePrompt from "./components/UpdatePrompt";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -114,6 +115,7 @@ function Shell({ children }) {
 export default function App() {
   return (
     <>
+      <EnvBadge />
       <GlobalLoader />
       <UpdatePrompt />
       <Shell>
