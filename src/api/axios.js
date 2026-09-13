@@ -1,16 +1,13 @@
 import axios from "axios";
 import { loadingStore } from "./loading";
+import { API_BASE_URL } from "../config/env";
 
-// Production always talks to the deployed Render API — this is the backend the
-// app has always used, and the one the Content-Security-Policy allows. We do NOT
-// read VITE_API_URL in production on purpose, so a stray build-time env override
-// can't repoint the live app at another host and get blocked by the CSP.
-// Dev still uses VITE_API_URL (or localhost).
-const baseURL = import.meta.env.PROD
-  ? "https://mymedin-server.onrender.com/api"
-  : import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
-const api = axios.create({ baseURL });
+// Which API this build talks to is decided in config/env.js: a production build
+// picks from a fixed allowlist of our own backends (production, staging), and
+// still ignores any VITE_API_URL, so a stray build-time override can't repoint a
+// deployed app at another host and get blocked by the CSP. Dev is unchanged and
+// still honours VITE_API_URL (or localhost).
+const api = axios.create({ baseURL: API_BASE_URL });
 
 // True when the app is running as an installed PWA (standalone), not a browser tab.
 const isStandalone = () =>

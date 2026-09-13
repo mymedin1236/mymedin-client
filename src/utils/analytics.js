@@ -1,6 +1,9 @@
 import mixpanel from "mixpanel-browser";
+import { ANALYTICS_TOKEN } from "../config/env";
 
-const token = import.meta.env.VITE_MIXPANEL_TOKEN;
+// Undefined on anything but production, so staging and local traffic never
+// reach the live Mixpanel project (every call below no-ops without a token).
+const token = ANALYTICS_TOKEN;
 let enabled = false;
 
 export const initAnalytics = () => {

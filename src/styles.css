@@ -2604,3 +2604,23 @@ h2.icon { gap: 8px; }
   display: inline-flex; align-items: center; padding: 2px; border-radius: 6px;
 }
 .avail-remove:hover { color: var(--danger); background: #fdeaea; }
+
+/* Non-production marker (see components/EnvBadge.jsx). Deliberately hard to
+   miss but out of the way: fixed to the bottom-left, above everything, and
+   click-through so it can never block a control underneath it. */
+.env-badge {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2147483647;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: #b42318;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  user-select: none;
+}
