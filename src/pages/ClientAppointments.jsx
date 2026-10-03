@@ -28,7 +28,9 @@ export default function ClientAppointments() {
   const [reqReason, setReqReason] = useState("");
   const [reqError, setReqError] = useState("");
   const [reqBusy, setReqBusy] = useState(false);
-  const [reqSent, setReqSent] = useState(false);
+  // null until a booking goes through, then { autoConfirmed } — the clinic may
+  // confirm on the spot, in which case there is nothing to wait for.
+  const [reqSent, setReqSent] = useState(null);
 
   const loadAppointments = () =>
     api.get("/appointments", { skipLoader: true }).then((r) => setAppointments(r.data)).catch(() => {});
@@ -67,15 +69,16 @@ export default function ClientAppointments() {
     if (!reqDate) return setReqError("Please pick a time slot.");
     setReqBusy(true);
     try {
-      await api.post("/appointments/request", {
+      const { data } = await api.post("/appointments/request", {
         date: reqDate,
         reason: reqReason,
         for: reqFor || undefined,
         appointmentType: reqSlot?.typeId || undefined,
       });
-      trackAppointment("requested", { doctor_id: assoc?.doctor?._id });
+      const autoConfirmed = !!data?.autoConfirmed;
+      trackAppointment(autoConfirmed ? "booked" : "requested", { doctor_id: assoc?.doctor?._id });
       setShowRequest(false);
-      setReqSent(true);
+      setReqSent({ autoConfirmed });
       await loadAppointments();
     } catch (err) {
       setReqError(err.response?.data?.message || "Could not send request.");
@@ -115,7 +118,17 @@ export default function ClientAppointments() {
       {reqSent && (
         <div className="card" style={{ maxWidth: "none", borderColor: "var(--primary)" }}>
           <p className="icon" style={{ margin: 0 }}>
-            <Icon name="schedule_send" size={18} /> Request sent — you'll be notified once your doctor confirms.
+            {reqSent.autoConfirmed ? (
+              <>
+                <Icon name="event_available" size={18} /> Appointment confirmed — it's in the
+                clinic's diary. We've sent you the details.
+              </>
+            ) : (
+              <>
+                <Icon name="schedule_send" size={18} /> Request sent — you'll be notified once your
+                doctor confirms.
+              </>
+            )}
           </p>
         </div>
       )}

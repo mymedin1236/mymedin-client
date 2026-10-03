@@ -27,6 +27,10 @@ export default function Settings() {
   const [availabilityBase, setAvailabilityBase] = useState(DEFAULT_HOURS);
   const [slotDuration, setSlotDuration] = useState(15);
   const [slotDurationBase, setSlotDurationBase] = useState(15);
+  // Whether a patient's booking is confirmed on the spot or waits for approval.
+  // Only the doctor may change it — the server rejects an assistant (403).
+  const [autoConfirm, setAutoConfirm] = useState(false);
+  const [autoConfirmBase, setAutoConfirmBase] = useState(false);
   const [dayOverrides, setDayOverrides] = useState([]);
   const [dayOverridesBase, setDayOverridesBase] = useState([]);
   // Appointment types save themselves as they're edited (each is its own
@@ -55,6 +59,8 @@ export default function Settings() {
         setAvailabilityBase(hours);
         setSlotDuration(data.slotDuration || 15);
         setSlotDurationBase(data.slotDuration || 15);
+        setAutoConfirm(!!data.autoConfirmBookings);
+        setAutoConfirmBase(!!data.autoConfirmBookings);
         setDayOverrides(data.dayOverrides || []);
         setDayOverridesBase(data.dayOverrides || []);
         setTypes(data.appointmentTypes || []);
@@ -84,6 +90,8 @@ export default function Settings() {
     );
   };
 
+  const isDoctor = user.role === "doctor";
+
   // Save one section: PUT only its field(s); on success, update that section's
   // baseline and keep the doctor's own session in sync.
   const putSection = async (section, payload, onSaved) => {
@@ -92,11 +100,12 @@ export default function Settings() {
     try {
       const { data } = await api.put("/auth/clinic-settings", payload);
       onSaved(data);
-      if (user.role === "doctor") {
+      if (isDoctor) {
         updateUser({
           ...user,
           availability: data.availability,
           slotDuration: data.slotDuration,
+          autoConfirmBookings: data.autoConfirmBookings,
           location: data.location || user.location,
         });
       }
@@ -111,6 +120,7 @@ export default function Settings() {
 
   const hoursDirty = !eq(availability, availabilityBase);
   const slotDirty = Number(slotDuration) !== Number(slotDurationBase);
+  const approvalDirty = autoConfirm !== autoConfirmBase;
   const overridesDirty = !eq(dayOverrides, dayOverridesBase);
   const locDirty = !eq(coords, coordsBase);
 
@@ -119,6 +129,10 @@ export default function Settings() {
   const saveSlot = () =>
     putSection("slot", { slotDuration: Number(slotDuration) }, () =>
       setSlotDurationBase(Number(slotDuration))
+    );
+  const saveApproval = () =>
+    putSection("approval", { autoConfirmBookings: autoConfirm }, (data) =>
+      setAutoConfirmBase(!!data.autoConfirmBookings)
     );
   const saveOverrides = () =>
     putSection("overrides", { dayOverrides }, (data) => {
@@ -220,6 +234,56 @@ export default function Settings() {
           </select>
         </label>
         {saveRow("slot", slotDirty, saveSlot, () => setSlotDuration(slotDurationBase))}
+      </div>
+
+      {/* How patient bookings are approved — the doctor's call, not an assistant's */}
+      <div className="card">
+        <h3 className="icon"><Icon name="task_alt" size={18} /> Appointment approval</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          What happens when a patient books one of your published slots. Either way the
+          slot and same-day checks still run, so a booking can never double-book you.
+        </p>
+        {isDoctor ? (
+          <>
+            <label className="approval-choice">
+              <input
+                type="radio"
+                name="approval"
+                checked={!autoConfirm}
+                onChange={() => setAutoConfirm(false)}
+              />
+              <span>
+                <strong>Review each booking</strong>
+                <span className="muted">
+                  The booking arrives as a request. Nothing is in your diary until you confirm it.
+                </span>
+              </span>
+            </label>
+            <label className="approval-choice">
+              <input
+                type="radio"
+                name="approval"
+                checked={autoConfirm}
+                onChange={() => setAutoConfirm(true)}
+              />
+              <span>
+                <strong>Confirm automatically</strong>
+                <span className="muted">
+                  The slot is booked straight away and the patient is told it's confirmed.
+                  Nothing waits for you.
+                </span>
+              </span>
+            </label>
+            {saveRow("approval", approvalDirty, saveApproval, () => setAutoConfirm(autoConfirmBase))}
+          </>
+        ) : (
+          <p className="muted icon" style={{ marginBottom: 0 }}>
+            <Icon name="lock" size={16} />
+            {autoConfirm
+              ? " Bookings are confirmed automatically. Only the doctor can change this."
+              : " Bookings wait for approval. Only the doctor can change this."}
+          </p>
+        )}
       </div>
 
       {/* Day-specific hours & time off */}
