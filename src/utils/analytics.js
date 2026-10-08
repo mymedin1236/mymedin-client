@@ -57,6 +57,9 @@ export const trackPayment = (action, props) => track("Payment", { action, ...pro
 // action: "reported" | "resolved"
 export const trackFollowUp = (action, props) => track("Follow-up", { action, ...props });
 
+// action: "downloaded" | "printed" | "emailed" | "shared"
+export const trackInvoice = (action, props) => track("Invoice", { action, ...props });
+
 export const trackDoctorAssociationRequested = (doctorId) =>
   track("Doctor Association Requested", { doctor_id: doctorId });
 

@@ -2641,3 +2641,22 @@ h2.icon { gap: 8px; }
   pointer-events: none;
   user-select: none;
 }
+
+/* Invoice modal: action buttons wrap to a 2-up grid, full-width on phones */
+.invoice-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.invoice-actions > * { justify-content: center; }
+@media (max-width: 480px) {
+  .invoice-actions { grid-template-columns: 1fr; }
+}
+/* Off-screen frame that holds the PDF so it can be printed without a new tab */
+.invoice-print-frame {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 0;
+  visibility: hidden;
+}

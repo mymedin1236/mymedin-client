@@ -7,6 +7,7 @@ import SlotPicker from "../components/SlotPicker";
 import { SkeletonTable } from "../components/Skeleton";
 import { COMMON_PROCEDURES } from "../data/procedures";
 import ProcedureInput from "../components/ProcedureInput";
+import InvoiceModal from "../components/InvoiceModal";
 import { trackAppointment, trackTreatment, trackPayment, trackFollowUp } from "../utils/analytics";
 
 const money = (n) => `Rs ${(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -72,6 +73,8 @@ export default function ClientLedger() {
   const [apptForm, setApptForm] = useState({ reason: "", date: "", notes: "", appointmentType: "" });
   const [apptError, setApptError] = useState("");
   const [apptShare, setApptShare] = useState(null); // { whatsappUrl } after scheduling
+  // Invoice modal: { treatment } for one treatment, { treatment: null } for all
+  const [invoice, setInvoice] = useState(null);
 
   const loadTreatments = () =>
     api.get("/treatments", { params: { client: id } }).then((t) => setTreatments(t.data));
@@ -406,6 +409,11 @@ export default function ClientLedger() {
       <div className="row gap" style={{ justifyContent: "space-between", flexWrap: "wrap", alignItems: "center" }}>
         <h2 className="icon" style={{ margin: 0 }}><Icon name="medical_services" /> Treatments &amp; payments</h2>
         <div className="row gap" style={{ flexWrap: "wrap" }}>
+          {treatments.length > 0 && (
+            <button className="btn-secondary icon" onClick={() => setInvoice({ treatment: null })}>
+              <Icon name="receipt_long" size={18} /> Invoice
+            </button>
+          )}
           {treatments.length > 1 && (
             <label className="sort-label">
               <Icon name="sort" size={18} />
@@ -482,6 +490,9 @@ export default function ClientLedger() {
                       <div className="card-menu-panel">
                         <button className="card-menu-item" onClick={() => { setOpenMenu(null); openEditTreat(t); }}>
                           <Icon name="edit" size={18} /> Edit
+                        </button>
+                        <button className="card-menu-item" onClick={() => { setOpenMenu(null); setInvoice({ treatment: t }); }}>
+                          <Icon name="receipt_long" size={18} /> Invoice
                         </button>
                         <button className="card-menu-item danger" onClick={() => { setOpenMenu(null); deleteTreat(t); }}>
                           <Icon name="delete" size={18} /> Delete
@@ -603,6 +614,10 @@ export default function ClientLedger() {
             <span className="ledger-stat-value">{money(outstanding)}</span>
           </div>
         </div>
+      )}
+
+      {invoice && (
+        <InvoiceModal client={client} treatment={invoice.treatment} onClose={() => setInvoice(null)} />
       )}
 
       {/* Schedule-appointment modal */}
