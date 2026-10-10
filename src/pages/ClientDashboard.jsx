@@ -49,20 +49,14 @@ const clinicStatus = (availability) => {
 export default function ClientDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [assoc, setAssoc] = useState(null); // { doctor, pending }
+  const [assoc, setAssoc] = useState(null); // { doctors, pendings, … }
   const [upcoming, setUpcoming] = useState([]);
   const [outstanding, setOutstanding] = useState(0);
-  const [showLeave, setShowLeave] = useState(false);
+  const [leaveDoctor, setLeaveDoctor] = useState(null); // doctor being left, or null
   const [leaveRating, setLeaveRating] = useState(5);
   const [leaveComment, setLeaveComment] = useState("");
   const [leaving, setLeaving] = useState(false);
   const [assocNotice, setAssocNotice] = useState("");
-  // Inline "review your doctor"
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [editingReview, setEditingReview] = useState(false); // showing the review form
-  const [reviewError, setReviewError] = useState("");
 
   const loadAssoc = () =>
     api.get("/associations/me").then((r) => setAssoc(r.data)).catch(() => {});
@@ -146,10 +140,11 @@ export default function ClientDashboard() {
     setLeaving(true);
     try {
       await api.post("/associations/disassociate", {
+        doctorId: leaveDoctor?._id,
         rating: leaveRating,
         comment: leaveComment,
       });
-      setShowLeave(false);
+      setLeaveDoctor(null);
       setLeaveComment("");
       await loadAssoc();
       await loadUpcoming();
@@ -158,24 +153,6 @@ export default function ClientDashboard() {
       console.error(err);
     } finally {
       setLeaving(false);
-    }
-  };
-
-  const submitReview = async () => {
-    if (!assoc?.doctor?._id) return;
-    setReviewError("");
-    setReviewSubmitting(true);
-    try {
-      await api.post(`/doctors/${assoc.doctor._id}/reviews`, {
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-      setEditingReview(false);
-      loadAssoc(); // refresh myReview + the doctor's average
-    } catch (err) {
-      setReviewError(err.response?.data?.message || "Could not submit your review.");
-    } finally {
-      setReviewSubmitting(false);
     }
   };
 
@@ -227,6 +204,10 @@ export default function ClientDashboard() {
     </div>
     );
   };
+
+  // Older servers send a single `doctor` / `pending`.
+  const doctors = assoc?.doctors || (assoc?.doctor ? [{ ...assoc.doctor, myReview: assoc.myReview }] : []);
+  const pendings = assoc?.pendings || (assoc?.pending ? [assoc.pending] : []);
 
   return (
     <div className="page">
@@ -292,130 +273,59 @@ export default function ClientDashboard() {
         )}
       </section>
 
-      {/* 3 — Review your doctor */}
+      {/* 3 — My doctors (a patient may see several: dentist, physio, eye…) */}
       <section>
         <h2 className="icon" style={{ marginBottom: 8 }}>
-          <Icon name="reviews" /> Review your doctor
+          <Icon name="medical_information" /> My doctor{doctors.length > 1 ? "s" : ""}
         </h2>
-        <div className="card" style={{ maxWidth: "none" }}>
-          {assoc === null ? (
+        {assoc === null ? (
+          <div className="card" style={{ maxWidth: "none" }}>
             <p className="muted" style={{ margin: 0 }}>Loading…</p>
-          ) : assoc.doctor ? (
-            <>
-              <div
-                onClick={() => navigate(`/doctors/${assoc.doctor._id}`)}
-                title="View doctor details"
-                style={{ display: "flex", gap: 12, alignItems: "center", cursor: "pointer" }}
-              >
-                <Avatar src={assoc.doctor.image} name={assoc.doctor.name} size={56} />
-                <div>
-                  <strong>Dr. {assoc.doctor.name}</strong>
-                  {assoc.doctor.clinicName && (
-                    <div className="muted" style={{ fontSize: 13 }}>{assoc.doctor.clinicName}</div>
-                  )}
-                  {(() => {
-                    const st = clinicStatus(assoc.doctor.availability);
-                    return st ? (
-                      <span className={`clinic-badge ${st.kind}`} style={{ marginTop: 4 }}>
-                        <Icon name={st.icon} size={14} /> {st.text}
-                      </span>
-                    ) : null;
-                  })()}
-                </div>
+          </div>
+        ) : (
+          <>
+            {doctors.map((d) => (
+              <DoctorCard
+                key={d._id}
+                doctor={d}
+                onOpen={() => navigate(`/doctors/${d._id}`)}
+                onLeave={() => {
+                  setLeaveRating(d.myReview?.rating || 5);
+                  setLeaveComment("");
+                  setLeaveDoctor(d);
+                }}
+                onReviewed={loadAssoc}
+              />
+            ))}
+            {pendings.map((p) => (
+              <div key={p._id} className="card" style={{ maxWidth: "none" }}>
+                <p className="muted" style={{ margin: 0 }}>
+                  Request pending with Dr. {p.doctor?.name}. You'll be notified once they respond.
+                </p>
               </div>
-
-              <hr className="divider" />
-
-              {assoc.myReview && !editingReview ? (
-                <>
-                  <p className="icon" style={{ margin: 0, color: "#1a7f37" }}>
-                    <Icon name="check_circle" size={18} /> Thanks — you've reviewed this doctor.
-                  </p>
-                  <div className="row gap" style={{ alignItems: "center", marginTop: 6 }}>
-                    <StarRating value={assoc.myReview.rating} size={20} />
-                    <span className="muted" style={{ fontSize: 13 }}>Your rating</span>
-                  </div>
-                  {assoc.myReview.comment && (
-                    <p style={{ margin: "2px 0 0", fontStyle: "italic", color: "var(--text)" }}>
-                      "{assoc.myReview.comment}"
-                    </p>
-                  )}
-                  <div className="row gap" style={{ flexWrap: "wrap", marginTop: 4 }}>
-                    <button
-                      className="btn-secondary icon"
-                      onClick={() => {
-                        setReviewRating(assoc.myReview.rating);
-                        setReviewComment(assoc.myReview.comment || "");
-                        setReviewError("");
-                        setEditingReview(true);
-                      }}
-                    >
-                      <Icon name="edit" size={18} /> Edit review
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="muted" style={{ marginTop: 0 }}>
-                    {assoc.myReview ? "Update your review" : "How was your experience?"}
-                  </p>
-                  {reviewError && <div className="error">{reviewError}</div>}
-                  <StarRating value={reviewRating} onChange={setReviewRating} size={30} />
-                  <textarea
-                    rows={3}
-                    placeholder="Share your experience (optional)…"
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
-                  />
-                  <div className="row gap" style={{ flexWrap: "wrap" }}>
-                    <button className="icon" onClick={submitReview} disabled={reviewSubmitting}>
-                      <Icon name="send" size={18} />{" "}
-                      {reviewSubmitting ? "Submitting…" : assoc.myReview ? "Update review" : "Submit review"}
-                    </button>
-                    {assoc.myReview && (
-                      <button className="btn-secondary" onClick={() => setEditingReview(false)}>
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-
-              <hr className="divider" />
-              <div className="row gap" style={{ flexWrap: "wrap" }}>
-                <Link
-                  to={`/doctors/${assoc.doctor._id}`}
-                  className="btn-secondary icon"
-                  style={{ textDecoration: "none" }}
-                >
-                  <Icon name="info" size={18} /> View details
+            ))}
+            <div className="card" style={{ maxWidth: "none" }}>
+              <div className="row gap" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+                <span className="muted">
+                  {doctors.length
+                    ? "Seeing another specialist? Add them here too."
+                    : "You're not associated with a doctor yet."}
+                </span>
+                <Link to="/find-doctor" className="btn-secondary icon" style={{ textDecoration: "none" }}>
+                  <Icon name="person_search" size={18} /> {doctors.length ? "Add another doctor" : "Find a doctor"}
                 </Link>
-                <button className="btn-secondary icon" onClick={() => setShowLeave(true)}>
-                  <Icon name="logout" size={18} /> Leave / switch doctor
-                </button>
               </div>
-            </>
-          ) : assoc.pending ? (
-            <p className="muted" style={{ margin: 0 }}>
-              Request pending with Dr. {assoc.pending.doctor?.name}. You'll be notified once they respond.
-            </p>
-          ) : (
-            <div className="row gap" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
-              <span className="muted">You're not associated with a doctor yet.</span>
-              <Link to="/find-doctor" className="btn-secondary icon" style={{ textDecoration: "none" }}>
-                <Icon name="person_search" size={18} /> Find a doctor
-              </Link>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </section>
 
-      {showLeave && (
-        <div className="modal-backdrop" onClick={() => setShowLeave(false)}>
+      {leaveDoctor && (
+        <div className="modal-backdrop" onClick={() => setLeaveDoctor(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Leave Dr. {assoc?.doctor?.name}?</h3>
+            <h3>Leave Dr. {leaveDoctor.name}?</h3>
             <p className="muted" style={{ marginTop: 0 }}>
-              Please rate your experience before you go.
+              Your other doctors aren't affected. Please rate your experience before you go.
             </p>
             <StarRating value={leaveRating} onChange={setLeaveRating} size={28} />
             <textarea
@@ -428,13 +338,131 @@ export default function ClientDashboard() {
               <button className="btn-danger" onClick={disassociate} disabled={leaving}>
                 {leaving ? "Leaving…" : "Confirm & leave"}
               </button>
-              <button className="btn-secondary" onClick={() => setShowLeave(false)}>
+              <button className="btn-secondary" onClick={() => setLeaveDoctor(null)}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// One of the patient's doctors: who they are, whether the clinic is open, the
+// patient's review of them, and a way to leave just this doctor.
+function DoctorCard({ doctor, onOpen, onLeave, onReviewed }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState("");
+  const review = doctor.myReview;
+  const st = clinicStatus(doctor.availability);
+
+  const submit = async () => {
+    setError("");
+    setSubmitting(true);
+    try {
+      await api.post(`/doctors/${doctor._id}/reviews`, { rating, comment });
+      setEditing(false);
+      onReviewed(); // refresh myReview + the doctor's average
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not submit your review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="card" style={{ maxWidth: "none" }}>
+      <div
+        onClick={onOpen}
+        title="View doctor details"
+        style={{ display: "flex", gap: 12, alignItems: "center", cursor: "pointer" }}
+      >
+        <Avatar src={doctor.image} name={doctor.name} size={56} />
+        <div>
+          <strong>Dr. {doctor.name}</strong>
+          {(doctor.specialization || doctor.clinicName) && (
+            <div className="muted" style={{ fontSize: 13 }}>
+              {[doctor.specialization, doctor.clinicName].filter(Boolean).join(" · ")}
+            </div>
+          )}
+          {st && (
+            <span className={`clinic-badge ${st.kind}`} style={{ marginTop: 4 }}>
+              <Icon name={st.icon} size={14} /> {st.text}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <hr className="divider" />
+
+      {review && !editing ? (
+        <>
+          <p className="icon" style={{ margin: 0, color: "#1a7f37" }}>
+            <Icon name="check_circle" size={18} /> Thanks — you've reviewed this doctor.
+          </p>
+          <div className="row gap" style={{ alignItems: "center", marginTop: 6 }}>
+            <StarRating value={review.rating} size={20} />
+            <span className="muted" style={{ fontSize: 13 }}>Your rating</span>
+          </div>
+          {review.comment && (
+            <p style={{ margin: "2px 0 0", fontStyle: "italic", color: "var(--text)" }}>
+              "{review.comment}"
+            </p>
+          )}
+          <div className="row gap" style={{ flexWrap: "wrap", marginTop: 4 }}>
+            <button
+              className="btn-secondary icon"
+              onClick={() => {
+                setRating(review.rating);
+                setComment(review.comment || "");
+                setError("");
+                setEditing(true);
+              }}
+            >
+              <Icon name="edit" size={18} /> Edit review
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="muted" style={{ marginTop: 0 }}>
+            {review ? "Update your review" : "How was your experience?"}
+          </p>
+          {error && <div className="error">{error}</div>}
+          <StarRating value={rating} onChange={setRating} size={30} />
+          <textarea
+            rows={3}
+            placeholder="Share your experience (optional)…"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+          <div className="row gap" style={{ flexWrap: "wrap" }}>
+            <button className="icon" onClick={submit} disabled={submitting}>
+              <Icon name="send" size={18} />{" "}
+              {submitting ? "Submitting…" : review ? "Update review" : "Submit review"}
+            </button>
+            {review && (
+              <button className="btn-secondary" onClick={() => setEditing(false)}>
+                Cancel
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      <hr className="divider" />
+      <div className="row gap" style={{ flexWrap: "wrap" }}>
+        <Link to={`/doctors/${doctor._id}`} className="btn-secondary icon" style={{ textDecoration: "none" }}>
+          <Icon name="info" size={18} /> View details
+        </Link>
+        <button className="btn-secondary icon" onClick={onLeave}>
+          <Icon name="logout" size={18} /> Leave this doctor
+        </button>
+      </div>
     </div>
   );
 }

@@ -77,7 +77,12 @@ function Shell({ children }) {
     const refresh = () =>
       api
         .get("/associations/me", { skipLoader: true })
-        .then((r) => setMyDoctorId(r.data?.doctor?._id || null))
+        .then((r) => {
+          // With several doctors there's no single "My doctor" — the tab stays
+          // "Find a doctor" and Home lists them all.
+          const list = r.data?.doctors || (r.data?.doctor ? [r.data.doctor] : []);
+          setMyDoctorId(list.length === 1 ? list[0]._id : null);
+        })
         .catch(() => {});
     refresh();
     // Update instantly when the association changes — a doctor approval/decline

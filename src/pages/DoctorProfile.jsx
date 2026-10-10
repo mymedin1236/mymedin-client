@@ -55,6 +55,13 @@ export default function DoctorProfile() {
     }
   }, [user]);
 
+  // A patient may be with several doctors; older servers send only `doctor`.
+  const myDoctors = assoc?.doctors || (assoc?.doctor ? [assoc.doctor] : []);
+  const isMyDoctor = myDoctors.some((d) => d._id === id);
+  const isPendingHere = (assoc?.pendings || (assoc?.pending ? [assoc.pending] : [])).some(
+    (p) => (p.doctor?._id || p.doctor) === id
+  );
+
   // Logged-out visitor chose this clinic: remember it, then send them to sign up.
   const startAssociate = () => {
     sessionStorage.setItem("pendingAssociation", JSON.stringify({ id, name: doctor?.name || "" }));
@@ -67,7 +74,10 @@ export default function DoctorProfile() {
     try {
       await api.post("/associations/request", { doctorId: id });
       trackDoctorAssociationRequested(id);
-      setAssoc((a) => ({ ...(a || {}), pending: { doctor: { _id: id, name: doctor.name } } }));
+      setAssoc((a) => {
+        const pend = { doctor: { _id: id, name: doctor.name } };
+        return { ...(a || {}), pending: pend, pendings: [...(a?.pendings || []), pend] };
+      });
       setAssocMsg("Request sent — the doctor will be notified.");
     } catch (err) {
       setAssocMsg(err.response?.data?.message || "Could not send request.");
@@ -172,11 +182,9 @@ export default function DoctorProfile() {
 
         {user?.role === "client" && (
           <div className="assoc-bar">
-            {assoc?.doctor?._id === id ? (
+            {isMyDoctor ? (
               <span className="badge icon"><Icon name="verified" size={16} /> You're associated with this doctor</span>
-            ) : assoc?.doctor ? (
-              <span className="muted">You're already with Dr. {assoc.doctor.name}. Leave them first to switch.</span>
-            ) : assoc?.pending ? (
+            ) : isPendingHere ? (
               <span className="badge-pending">Request pending…</span>
             ) : (
               <button onClick={requestAssociation} disabled={requesting} className="icon">
@@ -225,12 +233,12 @@ export default function DoctorProfile() {
       </div>
 
       {/* Leave a review — only patients associated with this doctor */}
-      {user?.role === "client" && assoc?.doctor?._id !== id && (
+      {user?.role === "client" && !isMyDoctor && (
         <p className="muted" style={{ marginTop: 12 }}>
           You can leave a review once Dr. {doctor.name} approves your association.
         </p>
       )}
-      {user?.role === "client" && assoc?.doctor?._id === id && (
+      {user?.role === "client" && isMyDoctor && (
         <form className="card" onSubmit={submitReview}>
           <h3 className="icon"><Icon name="rate_review" size={18} /> Leave a review</h3>
           {reviewError && <div className="error">{reviewError}</div>}

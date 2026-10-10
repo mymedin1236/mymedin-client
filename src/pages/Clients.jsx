@@ -238,7 +238,21 @@ export default function Clients({ mode = "patients" }) {
       }
       load();
     } catch (err) {
-      setError(err.response?.data?.message || "Save failed");
+      // Already a patient of another doctor (e.g. the eye clinic registered
+      // them first): offer to add that same account here, not a duplicate.
+      const body = err.response?.data;
+      if (body?.code === "PATIENT_EXISTS" && body.patient?._id && confirm(body.message)) {
+        try {
+          await api.post(`/clients/${body.patient._id}/link`);
+          resetForm();
+          await load();
+          navigate(`/clients/${body.patient._id}`);
+        } catch (e2) {
+          setError(e2.response?.data?.message || "Could not add the patient.");
+        }
+        return;
+      }
+      setError(body?.message || "Save failed");
     }
   };
 
@@ -260,8 +274,13 @@ export default function Clients({ mode = "patients" }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this patient?")) return;
-    await api.delete(`/clients/${id}`);
+    if (!confirm("Remove this patient from your clinic? If they're also with other doctors, their account stays with them."))
+      return;
+    try {
+      await api.delete(`/clients/${id}`);
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not remove the patient.");
+    }
     load();
   };
 
@@ -801,7 +820,7 @@ export default function Clients({ mode = "patients" }) {
                         className="card-menu-item danger"
                         onClick={() => { setMenuFor(null); handleDelete(c._id); }}
                       >
-                        <Icon name="delete" size={18} /> Delete
+                        <Icon name="person_remove" size={18} /> Remove
                       </button>
                     </div>
                   </>

@@ -1043,6 +1043,11 @@ label,
 .cs-name { font-weight: 600; font-size: 15px; }
 .cs-sub { font-size: 12.5px; color: var(--muted); }
 .cs-empty { padding: 14px 10px; color: var(--muted); text-align: center; }
+.cs-add { border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; margin-bottom: 4px; }
+.cs-add .cs-name { color: var(--primary); }
+/* Inline "new patient" fields in the booking form */
+.quick-add { border: 1px dashed var(--border); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
+.quick-add-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 input, select, textarea {
   padding: 10px 12px;

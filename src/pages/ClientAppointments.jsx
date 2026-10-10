@@ -21,6 +21,8 @@ export default function ClientAppointments() {
   // Request a new appointment
   const [showRequest, setShowRequest] = useState(false);
   const [reqFor, setReqFor] = useState(""); // "" = myself, else dependent id
+  // Which of the patient's doctors (dentist, physio, …) this booking is with.
+  const [reqDoctor, setReqDoctor] = useState("");
   const [reqDate, setReqDate] = useState("");
   // The slot the patient tapped — carries which kind of appointment that
   // bracket runs, so the request is booked as that type at its own length.
@@ -54,8 +56,14 @@ export default function ClientAppointments() {
     })();
   }, []);
 
+  // Every doctor the patient is with; older servers only send `doctor`.
+  const doctors = assoc?.doctors || (assoc?.doctor ? [assoc.doctor] : []);
+  const reqDoctorObj = doctors.find((d) => d._id === reqDoctor) || doctors[0];
+
   const openRequest = () => {
     setReqFor("");
+    setReqDoctor(doctors[0]?._id || "");
+    setReqSlot(null);
     setReqDate("");
     setReqReason("");
     setReqError("");
@@ -73,10 +81,11 @@ export default function ClientAppointments() {
         date: reqDate,
         reason: reqReason,
         for: reqFor || undefined,
+        doctorId: reqDoctorObj?._id,
         appointmentType: reqSlot?.typeId || undefined,
       });
       const autoConfirmed = !!data?.autoConfirmed;
-      trackAppointment(autoConfirmed ? "booked" : "requested", { doctor_id: assoc?.doctor?._id });
+      trackAppointment(autoConfirmed ? "booked" : "requested", { doctor_id: reqDoctorObj?._id });
       setShowRequest(false);
       setReqSent({ autoConfirmed });
       await loadAppointments();
@@ -88,22 +97,25 @@ export default function ClientAppointments() {
   };
 
   // Hide "Request appointment" once the patient already has an active appointment
-  // (pending or upcoming). Guardians with dependents keep it so they can still
-  // book for a child. The server also blocks same-day double-booking.
+  // (pending or upcoming) with EVERY one of their doctors. Guardians with
+  // dependents keep it so they can still book for a child. The server also
+  // blocks same-day double-booking.
   const now = Date.now();
-  const hasActiveOwn = appointments.some(
-    (a) =>
-      a.client?._id === user._id &&
-      ["pending", "scheduled"].includes(a.status) &&
-      new Date(a.date).getTime() >= now
-  );
-  const hideRequest = hasActiveOwn && deps.length === 0;
+  const hasActiveWith = (doctorId) =>
+    appointments.some(
+      (a) =>
+        a.client?._id === user._id &&
+        (a.doctor?._id || a.doctor) === doctorId &&
+        ["pending", "scheduled"].includes(a.status) &&
+        new Date(a.date).getTime() >= now
+    );
+  const hideRequest = doctors.length > 0 && doctors.every((d) => hasActiveWith(d._id)) && deps.length === 0;
 
   return (
     <div className="page">
       <div className="page-head">
         <h1 className="icon"><Icon name="calendar_month" /> My appointments</h1>
-        {assoc?.doctor &&
+        {doctors.length > 0 &&
           (hideRequest ? (
             <span className="muted icon" style={{ fontSize: 14 }}>
               <Icon name="event_available" size={18} /> Appointment already scheduled
@@ -182,9 +194,30 @@ export default function ClientAppointments() {
                 </button>
               </div>
               <p className="muted" style={{ margin: 0 }}>
-                Pick an available slot with Dr. {assoc?.doctor?.name}. They'll confirm your request.
+                Pick an available slot with Dr. {reqDoctorObj?.name}. They'll confirm your request.
               </p>
               {reqError && <div className="error">{reqError}</div>}
+              {doctors.length > 1 && (
+                <label>
+                  <span className="lbl">Which doctor?</span>
+                  <select
+                    value={reqDoctorObj?._id || ""}
+                    onChange={(e) => {
+                      setReqDoctor(e.target.value);
+                      // The old slot belongs to the other doctor's diary.
+                      setReqDate("");
+                      setReqSlot(null);
+                    }}
+                  >
+                    {doctors.map((d) => (
+                      <option key={d._id} value={d._id}>
+                        Dr. {d.name}
+                        {d.specialization ? ` · ${d.specialization}` : d.clinicName ? ` · ${d.clinicName}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               {deps.length > 0 && (
                 <label>
                   <span className="lbl">Who is this for?</span>
@@ -205,6 +238,8 @@ export default function ClientAppointments() {
                 />
               </label>
               <SlotPicker
+                key={reqDoctorObj?._id || "doctor"}
+                myDoctorId={reqDoctorObj?._id}
                 value={reqDate}
                 onChange={(iso, slot) => {
                   setReqDate(iso);

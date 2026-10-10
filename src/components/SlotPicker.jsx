@@ -46,6 +46,8 @@ const fmtLen = (mins) => {
 // Optional props:
 //  - doctorId: fetch a specific doctor's booked slots from the public endpoint
 //    (used on the public doctor profile) instead of the viewer's own clinic.
+//  - myDoctorId: a patient booking with one of their several doctors — fetches
+//    that doctor's slots through the patient's own (authorised) endpoint.
 //  - availabilityOverride: use this availability array instead of the fetched one.
 //  - readOnly: display availability only — slots aren't selectable.
 export default function SlotPicker({
@@ -54,6 +56,7 @@ export default function SlotPicker({
   excludeId,
   stepMin = DEFAULT_SLOT_MINUTES,
   doctorId,
+  myDoctorId,
   availabilityOverride,
   readOnly = false,
   initialDay,
@@ -96,7 +99,12 @@ export default function SlotPicker({
     setLoadError(false);
     api
       .get(endpoint, {
-        params: { from: from.toISOString(), to: to.toISOString(), exclude: excludeId },
+        params: {
+          from: from.toISOString(),
+          to: to.toISOString(),
+          exclude: excludeId,
+          doctor: !doctorId && myDoctorId ? myDoctorId : undefined,
+        },
         skipLoader: true,
       })
       .then((r) => {
@@ -121,7 +129,7 @@ export default function SlotPicker({
     return () => {
       active = false;
     };
-  }, [day, excludeId, doctorId, reload]);
+  }, [day, excludeId, doctorId, myDoctorId, reload]);
 
   const availability = availabilityOverride || fetchedAvailability;
   // Trust the fetched hours only when the request actually succeeded. When an

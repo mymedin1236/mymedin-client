@@ -11,6 +11,22 @@ import { trackAppointment } from "../utils/analytics";
 const empty = { client: "", date: "", reason: "", notes: "", status: "scheduled", appointmentType: "" };
 const statusLabel = (s) => (s === "no_show" ? "No-show" : s === "pending" ? "Pending" : s);
 
+// "+92 300-1234567" / "0092…" / "300…" -> "03001234567", the form patients are
+// stored in. The server normalises the same way.
+const normalisePhone = (raw) => {
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.startsWith("0092")) d = d.slice(4);
+  else if (d.startsWith("92") && d.length === 12) d = d.slice(2);
+  if (d.length === 10 && d.startsWith("3")) d = "0" + d;
+  return d;
+};
+
+// The browser's Contact Picker (Chrome on Android, over HTTPS). Not available on
+// iOS or desktop, where staff type the details instead.
+const canPickContacts =
+  typeof navigator !== "undefined" && "contacts" in navigator && "select" in (navigator.contacts || {});
+const emptyNewPatient = { name: "", phone: "", email: "" };
+
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [clients, setClients] = useState([]);
@@ -25,6 +41,9 @@ export default function Appointments() {
   const [tab, setTab] = useState("upcoming"); // upcoming | past
   const [createDay, setCreateDay] = useState(""); // pre-selected day when "Add" tapped on a day header
   const [saving, setSaving] = useState(false); // in-flight lock so a double-click can't create two
+  // Booking someone who isn't a patient here yet: { name, phone, email }, or null
+  // when picking an existing patient. Created together with the appointment.
+  const [newPatient, setNewPatient] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { items, refresh: refreshNotifications } = useNotifications();
@@ -95,6 +114,7 @@ export default function Appointments() {
 
   const resetForm = () => {
     setForm(empty);
+    setNewPatient(null);
     setEditingId(null);
     setError("");
     setShowForm(false);
@@ -102,6 +122,7 @@ export default function Appointments() {
 
   const openCreate = (day = "") => {
     setForm(empty);
+    setNewPatient(null);
     setEditingId(null);
     setError("");
     setCreateDay(day);
@@ -113,6 +134,7 @@ export default function Appointments() {
   const openCreateAt = (iso) => {
     const day = iso ? iso.slice(0, 10) : "";
     setForm({ ...empty, date: iso });
+    setNewPatient(null);
     setEditingId(null);
     setError("");
     setCreateDay(day);
@@ -130,11 +152,45 @@ export default function Appointments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
+  // Pick someone from the phone's address book. If they're already a patient
+  // here, just select them; otherwise pre-fill the new-patient fields.
+  const pickFromContacts = async () => {
+    let picked;
+    try {
+      [picked] = await navigator.contacts.select(["name", "tel", "email"], { multiple: false });
+    } catch {
+      return; // cancelled or blocked
+    }
+    if (!picked) return;
+    const phones = (picked.tel || []).map(normalisePhone);
+    const phone = phones.find((p) => /^03\d{9}$/.test(p)) || phones[0] || "";
+    const existing = phone && clients.find((c) => c.phone && normalisePhone(c.phone) === phone);
+    if (existing) {
+      setNewPatient(null);
+      setForm((f) => ({ ...f, client: existing._id }));
+      return;
+    }
+    setForm((f) => ({ ...f, client: "" }));
+    setNewPatient({ name: picked.name?.[0] || "", phone, email: picked.email?.[0] || "" });
+  };
+
+  // Typed a name in the search that didn't match: start a new patient with it
+  // (or with a phone, if digits were typed).
+  const startNewPatient = (query = "") => {
+    setForm((f) => ({ ...f, client: "" }));
+    const digits = /^[\d\s+()-]{7,}$/.test(query);
+    setNewPatient({ ...emptyNewPatient, ...(digits ? { phone: normalisePhone(query) } : { name: query }) });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (saving) return; // ignore a second click while the first is still saving
-    if (!form.client) return setError("Please select a patient.");
+    if (!editingId && newPatient) {
+      if (!newPatient.name.trim()) return setError("Enter the new patient's name.");
+      if (!/^0\d{10}$/.test(normalisePhone(newPatient.phone)))
+        return setError("Phone number must be 11 digits and start with 0 (e.g. 03001234567).");
+    } else if (!form.client) return setError("Please select a patient.");
     if (!form.date) return setError("Please pick a time slot.");
     // Enforce "not in the past" only when CREATING. When editing an existing
     // appointment the slot picker already disables past slots, and staff must be
@@ -151,7 +207,21 @@ export default function Appointments() {
         trackAppointment("updated", { appointment_id: editingId, actor: "doctor" });
         resetForm();
       } else {
-        const { data } = await api.post("/appointments", payload);
+        if (newPatient) {
+          delete payload.client;
+          payload.newClient = { ...newPatient, phone: normalisePhone(newPatient.phone) };
+        }
+        let data;
+        try {
+          ({ data } = await api.post("/appointments", payload));
+        } catch (err) {
+          // Already registered with another doctor: add that same account to
+          // this clinic (with staff's OK) rather than create a duplicate.
+          const body = err.response?.data;
+          if (body?.code !== "PATIENT_EXISTS" || !confirm(body.message)) throw err;
+          payload.newClient.link = true;
+          ({ data } = await api.post("/appointments", payload));
+        }
         trackAppointment("booked", { appointment_id: data?.appointment?._id, actor: "doctor" });
         resetForm();
         setScheduled(data);
@@ -421,6 +491,18 @@ export default function Appointments() {
           <h3 className="icon">
             <Icon name="event_available" size={18} /> Appointment scheduled
           </h3>
+          {scheduled.newPatient && (
+            <p className="icon" style={{ margin: 0 }}>
+              <Icon name="person_add" size={18} /> New patient {scheduled.newPatient.client?.name} added to
+              your clinic. Their login was sent to {scheduled.newPatient.credentials?.phone || "them"}.
+            </p>
+          )}
+          {scheduled.linkedPatient && (
+            <p className="icon" style={{ margin: 0 }}>
+              <Icon name="group_add" size={18} /> {scheduled.linkedPatient.name} was already on MyMedin and
+              is now a patient at your clinic too.
+            </p>
+          )}
           <p className="muted" style={{ margin: 0 }}>
             The client has been notified in-app and by email. You can also send a WhatsApp reminder:
           </p>
@@ -457,12 +539,60 @@ export default function Appointments() {
         <div className="grid-2">
           <div className="field" style={{ gridColumn: "1 / -1" }}>
             Client
-            <ClientSearchSelect
-              clients={clients}
-              value={form.client}
-              onChange={(id) => setForm((f) => ({ ...f, client: id }))}
-              disabled={!!editingId}
-            />
+            {!editingId && newPatient ? (
+              <div className="quick-add">
+                <div className="quick-add-head">
+                  <strong className="icon"><Icon name="person_add" size={18} /> New patient</strong>
+                  <div className="row gap" style={{ flexWrap: "wrap" }}>
+                    {canPickContacts && (
+                      <button type="button" className="btn-link icon" onClick={pickFromContacts}>
+                        <Icon name="contacts" size={16} /> From contacts
+                      </button>
+                    )}
+                    <button type="button" className="btn-link" onClick={() => setNewPatient(null)}>
+                      Choose existing
+                    </button>
+                  </div>
+                </div>
+                <input
+                  placeholder="Full name"
+                  value={newPatient.name}
+                  onChange={(e) => setNewPatient((p) => ({ ...p, name: e.target.value }))}
+                  autoFocus
+                />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="Phone (03001234567)"
+                  value={newPatient.phone}
+                  onChange={(e) => setNewPatient((p) => ({ ...p, phone: e.target.value }))}
+                />
+                <input
+                  type="email"
+                  placeholder="Email (optional)"
+                  value={newPatient.email}
+                  onChange={(e) => setNewPatient((p) => ({ ...p, email: e.target.value }))}
+                />
+                <span className="muted" style={{ fontSize: 13 }}>
+                  We'll create their account with the appointment and send their login on WhatsApp.
+                </span>
+              </div>
+            ) : (
+              <>
+                <ClientSearchSelect
+                  clients={clients}
+                  value={form.client}
+                  onChange={(id) => setForm((f) => ({ ...f, client: id }))}
+                  disabled={!!editingId}
+                  onAddNew={editingId ? undefined : startNewPatient}
+                />
+                {!editingId && canPickContacts && (
+                  <button type="button" className="btn-link icon" onClick={pickFromContacts} style={{ alignSelf: "flex-start" }}>
+                    <Icon name="contacts" size={16} /> Pick from phone contacts
+                  </button>
+                )}
+              </>
+            )}
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
             <SlotPicker

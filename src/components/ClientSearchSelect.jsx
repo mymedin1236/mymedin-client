@@ -3,12 +3,15 @@ import Icon from "./Icon";
 
 // Searchable patient picker — type a name / phone / email to filter, instead of
 // scrolling a long <select>. `value` is the selected client id.
+// `onAddNew(query)`, when given, adds a "New patient" row so staff can register
+// someone who isn't on the list yet without leaving the form.
 export default function ClientSearchSelect({
   clients = [],
   value,
   onChange,
   disabled,
   placeholder = "Search patient by name or phone…",
+  onAddNew,
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -66,6 +69,23 @@ export default function ClientSearchSelect({
         <>
           <div className="cs-backdrop" onClick={() => setOpen(false)} />
           <div className="cs-list">
+            {onAddNew && (
+              <button
+                type="button"
+                className="cs-item cs-add"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setOpen(false);
+                  onAddNew(query.trim());
+                  setQuery("");
+                }}
+              >
+                <span className="cs-name icon">
+                  <Icon name="person_add" size={18} /> New patient{query.trim() ? `: "${query.trim()}"` : ""}
+                </span>
+                <span className="cs-sub">Add and book in one step</span>
+              </button>
+            )}
             {results.length === 0 ? (
               <div className="cs-empty">No patients found</div>
             ) : (
