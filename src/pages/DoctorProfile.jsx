@@ -72,8 +72,16 @@ export default function DoctorProfile() {
     setAssocMsg("");
     setRequesting(true);
     try {
-      await api.post("/associations/request", { doctorId: id });
+      const { data } = await api.post("/associations/request", { doctorId: id });
       trackDoctorAssociationRequested(id);
+      // A clinic set to approve automatically links the patient at once.
+      if (data?.status === "approved") {
+        const { data: me } = await api.get("/associations/me");
+        setAssoc(me);
+        setAssocMsg("You've joined this clinic. You can book an appointment now.");
+        window.dispatchEvent(new Event("association-changed"));
+        return;
+      }
       setAssoc((a) => {
         const pend = { doctor: { _id: id, name: doctor.name } };
         return { ...(a || {}), pending: pend, pendings: [...(a?.pendings || []), pend] };

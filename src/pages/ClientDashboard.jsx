@@ -124,9 +124,12 @@ export default function ClientDashboard() {
     if (!pend?.id) return;
     api
       .post("/associations/request", { doctorId: pend.id })
-      .then(() => {
+      .then(({ data }) => {
+        const who = `Dr. ${pend.name || "your selected doctor"}`;
         setAssocNotice(
-          `Request sent to Dr. ${pend.name || "your selected doctor"} — you'll be notified once they confirm.`
+          data?.status === "approved"
+            ? `You've joined ${who}'s clinic. You can book an appointment now.`
+            : `Request sent to ${who} — you'll be notified once they confirm.`
         );
         loadAssoc();
         window.dispatchEvent(new Event("association-changed"));

@@ -31,6 +31,10 @@ export default function Settings() {
   // Only the doctor may change it — the server rejects an assistant (403).
   const [autoConfirm, setAutoConfirm] = useState(false);
   const [autoConfirmBase, setAutoConfirmBase] = useState(false);
+  // Whether a patient's request to join the clinic is accepted on the spot.
+  // Also the doctor's call only — the server rejects an assistant (403).
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApproveBase, setAutoApproveBase] = useState(false);
   const [dayOverrides, setDayOverrides] = useState([]);
   const [dayOverridesBase, setDayOverridesBase] = useState([]);
   // Appointment types save themselves as they're edited (each is its own
@@ -61,6 +65,8 @@ export default function Settings() {
         setSlotDurationBase(data.slotDuration || 15);
         setAutoConfirm(!!data.autoConfirmBookings);
         setAutoConfirmBase(!!data.autoConfirmBookings);
+        setAutoApprove(!!data.autoApproveAssociations);
+        setAutoApproveBase(!!data.autoApproveAssociations);
         setDayOverrides(data.dayOverrides || []);
         setDayOverridesBase(data.dayOverrides || []);
         setTypes(data.appointmentTypes || []);
@@ -106,6 +112,7 @@ export default function Settings() {
           availability: data.availability,
           slotDuration: data.slotDuration,
           autoConfirmBookings: data.autoConfirmBookings,
+          autoApproveAssociations: data.autoApproveAssociations,
           location: data.location || user.location,
         });
       }
@@ -121,6 +128,7 @@ export default function Settings() {
   const hoursDirty = !eq(availability, availabilityBase);
   const slotDirty = Number(slotDuration) !== Number(slotDurationBase);
   const approvalDirty = autoConfirm !== autoConfirmBase;
+  const joinDirty = autoApprove !== autoApproveBase;
   const overridesDirty = !eq(dayOverrides, dayOverridesBase);
   const locDirty = !eq(coords, coordsBase);
 
@@ -133,6 +141,10 @@ export default function Settings() {
   const saveApproval = () =>
     putSection("approval", { autoConfirmBookings: autoConfirm }, (data) =>
       setAutoConfirmBase(!!data.autoConfirmBookings)
+    );
+  const saveJoin = () =>
+    putSection("join", { autoApproveAssociations: autoApprove }, (data) =>
+      setAutoApproveBase(!!data.autoApproveAssociations)
     );
   const saveOverrides = () =>
     putSection("overrides", { dayOverrides }, (data) => {
@@ -282,6 +294,55 @@ export default function Settings() {
             {autoConfirm
               ? " Bookings are confirmed automatically. Only the doctor can change this."
               : " Bookings wait for approval. Only the doctor can change this."}
+          </p>
+        )}
+      </div>
+
+      {/* How patient requests to join the clinic are approved — also the doctor's call */}
+      <div className="card">
+        <h3 className="icon"><Icon name="group_add" size={18} /> Patient approval</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          What happens when a patient asks to join your clinic. Only patients you've accepted
+          can book appointments with you.
+        </p>
+        {isDoctor ? (
+          <>
+            <label className="approval-choice">
+              <input
+                type="radio"
+                name="join"
+                checked={!autoApprove}
+                onChange={() => setAutoApprove(false)}
+              />
+              <span>
+                <strong>Review each request</strong>
+                <span className="muted">
+                  The request waits in your Clients list until you approve or decline it.
+                </span>
+              </span>
+            </label>
+            <label className="approval-choice">
+              <input
+                type="radio"
+                name="join"
+                checked={autoApprove}
+                onChange={() => setAutoApprove(true)}
+              />
+              <span>
+                <strong>Approve automatically</strong>
+                <span className="muted">
+                  The patient joins your clinic straight away and can book at once.
+                </span>
+              </span>
+            </label>
+            {saveRow("join", joinDirty, saveJoin, () => setAutoApprove(autoApproveBase))}
+          </>
+        ) : (
+          <p className="muted icon" style={{ marginBottom: 0 }}>
+            <Icon name="lock" size={16} />
+            {autoApprove
+              ? " Patients join automatically. Only the doctor can change this."
+              : " Patient requests wait for approval. Only the doctor can change this."}
           </p>
         )}
       </div>

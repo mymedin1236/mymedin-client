@@ -23,6 +23,7 @@ const timeAgo = (d) => {
 const routeFor = (n) => {
   switch (n.type) {
     case "association_request":
+    case "association_joined":
     case "association_ended":
       return "/clients";
     case "appointment_rescheduled":
