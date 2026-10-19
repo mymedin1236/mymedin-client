@@ -2665,3 +2665,21 @@ h2.icon { gap: 8px; }
   border: 0;
   visibility: hidden;
 }
+
+/* Days off: bookings that fall on them (Settings), and the leave notice in the slot picker */
+.leave-conflicts {
+  margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+  background: #fff8eb; border: 1px solid #f5d9a8; color: #7a4b00;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.leave-conflicts ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.leave-conflicts li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  background: var(--surface); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 14px;
+}
+.leave-conflicts > button { align-self: flex-start; }
+.leave-note {
+  margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: #fff8eb; border: 1px solid #f5d9a8;
+  color: #7a4b00; display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+}
+.leave-note p { margin: 0; }

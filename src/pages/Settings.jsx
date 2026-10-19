@@ -5,6 +5,7 @@ import Icon from "../components/Icon";
 import AvailabilityEditor from "../components/AvailabilityEditor";
 import DayOverridesEditor from "../components/DayOverridesEditor";
 import AppointmentTypesEditor from "../components/AppointmentTypesEditor";
+import { formatDateTime } from "../utils/date";
 
 const DEFAULT_HOURS = ["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => ({
   day,
@@ -48,6 +49,39 @@ export default function Settings() {
   const [error, setError] = useState("");
   const [savingSection, setSavingSection] = useState(null); // which section is saving
   const [savedFlash, setSavedFlash] = useState(null); // section that just saved (brief ✓)
+  // Bookings still standing on days marked off (e.g. a leave added after
+  // patients had booked), with the cancel-and-notify action's state.
+  const [conflicts, setConflicts] = useState([]);
+  const [cancelling, setCancelling] = useState(null); // "all" | appointment id | null
+  const [cancelNote, setCancelNote] = useState("");
+
+  const loadConflicts = () =>
+    api
+      .get("/appointments/closed-day-conflicts", { skipLoader: true })
+      .then(({ data }) => setConflicts(data.appointments || []))
+      .catch(() => {});
+
+  useEffect(() => {
+    loadConflicts();
+  }, []);
+
+  const cancelConflicts = async (ids) => {
+    const n = ids ? ids.length : conflicts.length;
+    if (!window.confirm(`Cancel ${n} appointment${n > 1 ? "s" : ""} and tell the patient${n > 1 ? "s" : ""} on WhatsApp?`))
+      return;
+    setError("");
+    setCancelNote("");
+    setCancelling(ids ? ids[0] : "all");
+    try {
+      const { data } = await api.post("/appointments/cancel-closed-days", ids ? { ids } : {});
+      setCancelNote(`${data.cancelled} appointment${data.cancelled === 1 ? "" : "s"} cancelled and patients notified.`);
+      await loadConflicts();
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not cancel the appointments.");
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   // Load the clinic's current settings (works for both doctor and assistant).
   useEffect(() => {
@@ -151,6 +185,8 @@ export default function Settings() {
       // The server prunes past-dated exceptions — reflect the cleaned list.
       setDayOverrides(data.dayOverrides || []);
       setDayOverridesBase(data.dayOverrides || []);
+      setCancelNote("");
+      loadConflicts();
     });
   const saveLocation = () =>
     putSection(
@@ -352,11 +388,55 @@ export default function Settings() {
         <h3 className="icon"><Icon name="event_busy" size={18} /> Day-specific hours &amp; time off</h3>
         <p className="muted" style={{ marginTop: 0 }}>
           Override the normal hours for a specific date — e.g. leaving early one
-          day, or a day off. Patients won't be able to book outside the adjusted
-          window for that date. Past dates are cleared automatically.
+          day, a day off, or a leave of several days. Patients won't be able to
+          book outside the adjusted window for that date, and they see your note.
+          Past dates are cleared automatically.
         </p>
         <DayOverridesEditor value={dayOverrides} onChange={setDayOverrides} types={types} />
         {saveRow("overrides", overridesDirty, saveOverrides, () => setDayOverrides(dayOverridesBase))}
+        {conflicts.length > 0 && (
+          <div className="leave-conflicts">
+            <p className="icon" style={{ margin: 0 }}>
+              <Icon name="warning" size={18} />
+              <strong>
+                {conflicts.length} appointment{conflicts.length > 1 ? "s" : ""} still booked on your days off
+              </strong>
+            </p>
+            <p className="muted" style={{ margin: 0 }}>
+              These patients booked before you marked the day off. Cancel them here and each patient is told
+              why on WhatsApp, or reschedule one from Appointments.
+            </p>
+            <ul>
+              {conflicts.map((a) => (
+                <li key={a._id}>
+                  <span>
+                    <strong>{a.client.name}</strong> · {formatDateTime(a.date)}
+                    {a.status === "pending" && <span className="muted"> · request</span>}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    disabled={!!cancelling}
+                    onClick={() => cancelConflicts([a._id])}
+                  >
+                    {cancelling === a._id ? "Cancelling…" : "Cancel & notify"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {conflicts.length > 1 && (
+              <button type="button" className="icon" disabled={!!cancelling} onClick={() => cancelConflicts(null)}>
+                <Icon name="event_busy" size={18} />
+                {cancelling === "all" ? "Cancelling…" : `Cancel all ${conflicts.length} and notify patients`}
+              </button>
+            )}
+          </div>
+        )}
+        {cancelNote && (
+          <p className="settings-saved icon" style={{ margin: 0 }}>
+            <Icon name="check_circle" size={16} /> {cancelNote}
+          </p>
+        )}
       </div>
 
       {/* Clinic location */}

@@ -7,41 +7,53 @@ import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import StarRating from "../components/StarRating";
 import AppointmentActions from "../components/AppointmentActions";
+import { clinicToday, clinicDow, clinicMinutes } from "../utils/clinicTime";
+import { bracketsForDay, closedRunAround, nextOpenDay } from "../utils/slots";
 
 const statusLabel = (s) =>
   s === "pending" ? "Awaiting confirmation" : s === "no_show" ? "No-show" : s;
 
 const money = (n) => `Rs ${(Number(n) || 0).toLocaleString("en-US")}`;
 
-const WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const toMin = (s) => {
-  const [h, m] = String(s).split(":").map(Number);
-  return h * 60 + (m || 0);
-};
 const fmt12 = (s) => {
   const [h, m] = String(s).split(":").map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
 };
+const minToHHMM = (t) => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+// "Mon, 17 Nov" for a clinic day string.
+const fmtDay = (d) =>
+  new Date(`${d}T12:00:00Z`).toLocaleDateString([], { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
 
-// Live open/closed status for a clinic, from its per-day availability.
-const clinicStatus = (availability) => {
-  if (!availability?.length) return null;
-  const now = new Date();
-  const entry = availability.find((a) => a.day === WEEK[now.getDay()]);
-  if (!entry || !entry.start || !entry.end)
-    return { kind: "closed", icon: "block", text: "Closed today" };
-  const start = toMin(entry.start);
-  const end = toMin(entry.end);
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  if (nowMin >= end) return { kind: "closed", icon: "block", text: "Closed for today" };
-  if (nowMin < start) {
-    const diff = start - nowMin;
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-    const inText = h > 0 ? `${h}h${m ? ` ${m}m` : ""}` : `${m}m`;
-    return { kind: "soon", icon: "schedule", text: `Opens in ${inText} (${fmt12(entry.start)})` };
+// Live open/closed status for a clinic, in clinic time, honouring days off and
+// leave as well as the weekly hours (and split days such as morning + evening).
+const clinicStatus = (doctor) => {
+  const { availability = [], dayOverrides = [] } = doctor || {};
+  if (!availability.length && !dayOverrides.length) return null;
+  const today = clinicToday();
+  const leave = closedRunAround(dayOverrides, today);
+  if (leave) {
+    const back = nextOpenDay({ availability, dayOverrides, dayStr: leave.to });
+    return {
+      kind: "closed",
+      icon: "event_busy",
+      text:
+        leave.from === leave.to
+          ? `Closed today${leave.reason ? ` · ${leave.reason}` : ""}`
+          : `On leave${leave.reason ? ` (${leave.reason})` : ""}${back ? ` · back ${fmtDay(back)}` : ""}`,
+    };
   }
-  return { kind: "open", icon: "check_circle", text: `Open now · closes ${fmt12(entry.end)}` };
+  const brackets = bracketsForDay({ availability, dayOverrides, dayStr: today, dow: clinicDow(today) });
+  if (!brackets.length) return { kind: "closed", icon: "block", text: "Closed today" };
+  const nowMin = clinicMinutes(new Date());
+  const current = brackets.find((b) => nowMin >= b.start && nowMin < b.end);
+  if (current) return { kind: "open", icon: "check_circle", text: `Open now · closes ${fmt12(minToHHMM(current.end))}` };
+  const next = brackets.find((b) => b.start > nowMin);
+  if (!next) return { kind: "closed", icon: "block", text: "Closed for today" };
+  const diff = next.start - nowMin;
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  const inText = h > 0 ? `${h}h${m ? ` ${m}m` : ""}` : `${m}m`;
+  return { kind: "soon", icon: "schedule", text: `Opens in ${inText} (${fmt12(minToHHMM(next.start))})` };
 };
 
 // Patient "Home" tab. Three sections: (1) scheduled appointment, (2) payments /
@@ -361,7 +373,7 @@ function DoctorCard({ doctor, onOpen, onLeave, onReviewed }) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const review = doctor.myReview;
-  const st = clinicStatus(doctor.availability);
+  const st = clinicStatus(doctor);
 
   const submit = async () => {
     setError("");

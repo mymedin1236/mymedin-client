@@ -8,7 +8,7 @@ import {
   clinicDow,
   clinicToInstant,
 } from "../utils/clinicTime";
-import { slotsForDay, overlaps, DEFAULT_SLOT_MINUTES } from "../utils/slots";
+import { slotsForDay, overlaps, DEFAULT_SLOT_MINUTES, closedRunAround, nextOpenDay } from "../utils/slots";
 
 const pad = (n) => String(n).padStart(2, "0");
 // All slot math is in the clinic's timezone (see utils/clinicTime), so the grid
@@ -22,6 +22,15 @@ const fmt12 = (s) => {
   const ap = h < 12 ? "AM" : "PM";
   return `${((h + 11) % 12) + 1}:${pad(m)} ${ap}`;
 };
+
+// "Mon, 2 Nov" for a clinic day string.
+const fmtDay = (d) =>
+  new Date(`${d}T12:00:00Z`).toLocaleDateString([], {
+    timeZone: "UTC",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 
 // "20 min" / "1h 30m"
 const fmtLen = (mins) => {
@@ -152,6 +161,13 @@ export default function SlotPicker({
   }, [availability, dayOverrides, day, hoursKnown, types, effectiveStep]);
 
   const isClosed = Array.isArray(slots) && slots.length === 0;
+  // On a closed day: the leave it belongs to (if the doctor marked it off) and
+  // the next day the clinic opens, so nobody has to hunt through the calendar.
+  const leave = isClosed ? closedRunAround(dayOverrides, day) : null;
+  const nextOpen = useMemo(
+    () => (isClosed ? nextOpenDay({ availability, dayOverrides, dayStr: day }) : null),
+    [isClosed, availability, dayOverrides, day]
+  );
 
   // The types actually on offer today, in the order their slots appear.
   const typesToday = useMemo(() => {
@@ -325,7 +341,23 @@ export default function SlotPicker({
           </button>
         </div>
       ) : isClosed ? (
-        <p className="muted" style={{ margin: "8px 0" }}>The clinic is closed on this day.</p>
+        <div className="leave-note" role="status">
+          <p>
+            <strong>
+              {!leave
+                ? "The clinic is closed on this day."
+                : leave.from === leave.to
+                ? "The doctor is not available on this day."
+                : `The doctor is on leave from ${fmtDay(leave.from)} to ${fmtDay(leave.to)}.`}
+            </strong>
+            {leave?.reason && <> {leave.reason}.</>}
+          </p>
+          {nextOpen && (
+            <button type="button" className="btn-secondary icon" onClick={() => setDay(nextOpen)}>
+              <Icon name="event_available" size={18} /> Next open day: {fmtDay(nextOpen)}
+            </button>
+          )}
+        </div>
       ) : (
         groups.map((g) => (
           <div key={g.key} className="slot-group">

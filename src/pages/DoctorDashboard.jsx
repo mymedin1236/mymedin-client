@@ -15,13 +15,16 @@ import {
   clinicDow,
   clinicToInstant,
 } from "../utils/clinicTime";
+import { bracketsForDay, closedRunAround, nextOpenDay } from "../utils/slots";
 
 const pad = (n) => String(n).padStart(2, "0");
 // Today's Schedule is computed in the clinic's timezone (see utils/clinicTime),
 // so the board is identical on every device regardless of its timezone setting.
 const dayStr = (d) => clinicDayStr(d);
 const hm = (d) => clinicHM(d);
-const JS_DAY_TO_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// "Mon, 17 Nov" for a clinic day string.
+const fmtDay = (d) =>
+  new Date(`${d}T12:00:00Z`).toLocaleDateString([], { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
 
 const fmt12 = (s) => {
   const [h, m] = s.split(":").map(Number);
@@ -66,6 +69,7 @@ export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [appts, setAppts] = useState([]);
   const [availability, setAvailability] = useState([]);
+  const [dayOverrides, setDayOverrides] = useState([]);
   const [balances, setBalances] = useState({}); // { clientId: outstanding }
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -99,6 +103,7 @@ export default function DoctorDashboard() {
     ]);
     setAppts(all.data);
     setAvailability(booked.data.availability || []);
+    setDayOverrides(booked.data.dayOverrides || []);
     setStep(booked.data.slotDuration || 15);
     setBalances(outstanding.data || {});
     setLoadError(false); // any successful load (incl. background) clears the error
@@ -157,14 +162,18 @@ export default function DoctorDashboard() {
     return map;
   }, [appts, today]);
 
-  // Clinic hours for today, as one or more windows (morning + evening supported).
-  const windows = useMemo(() => {
-    const label = JS_DAY_TO_LABEL[clinicDow(today)];
-    const entries = availability.filter((a) => a.day === label && a.start && a.end);
-    if (entries.length) return entries.map((a) => ({ start: toMin(a.start), end: toMin(a.end) }));
-    if (availability.length === 0) return [{ start: 9 * 60, end: 18 * 60 }];
-    return [];
-  }, [availability, today]);
+  // Clinic hours for today, as one or more windows (morning + evening
+  // supported), with today's custom hours or day off taking precedence.
+  const windows = useMemo(
+    () => bracketsForDay({ availability, dayOverrides, dayStr: today, dow: clinicDow(today) }),
+    [availability, dayOverrides, today]
+  );
+  // Today's leave, if the doctor marked today off, and when the clinic reopens.
+  const leave = useMemo(() => closedRunAround(dayOverrides, today), [dayOverrides, today]);
+  const reopens = useMemo(
+    () => (leave ? nextOpenDay({ availability, dayOverrides, dayStr: leave.to }) : null),
+    [leave, availability, dayOverrides]
+  );
 
   const slots = useMemo(() => {
     const set = new Set();
@@ -364,9 +373,23 @@ export default function DoctorDashboard() {
             <Icon name="refresh" size={18} /> Refresh
           </button>
         </div>
+      ) : leave ? (
+        <div className="leave-note" role="status">
+          <p>
+            <strong>
+              {leave.from === leave.to
+                ? "Today is marked as a day off."
+                : `On leave from ${fmtDay(leave.from)} to ${fmtDay(leave.to)}.`}
+            </strong>
+            {leave.reason && <> {leave.reason}.</>} Patients can't book these days
+            {reopens ? `; online booking opens again on ${fmtDay(reopens)}.` : "."}
+          </p>
+          {rows.length > 0 && <p>Appointments already booked for today are listed below.</p>}
+        </div>
       ) : rows.length === 0 ? (
         <p className="muted">The clinic is closed today.</p>
-      ) : (
+      ) : null}
+      {!loadError && rows.length > 0 && (
         <div className="day-grid">
           {rows.map((slot) => {
             const appt = apptByTime[slot];
