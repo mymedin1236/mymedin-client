@@ -299,6 +299,16 @@ export default function ClientDashboard() {
           </div>
         ) : (
           <>
+            {(assoc?.clinics || []).map((c) => (
+              <div key={c._id} className="clinic-share-note">
+                <Icon name="local_hospital" size={18} />
+                <span>
+                  You're registered with <strong>{c.name}</strong> ({c.doctorCount} doctor
+                  {c.doctorCount === 1 ? "" : "s"}), so you can book with any of them. Each doctor keeps their
+                  own notes and treatment history.
+                </span>
+              </div>
+            ))}
             {doctors.map((d) => (
               <DoctorCard
                 key={d._id}

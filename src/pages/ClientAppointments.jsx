@@ -4,6 +4,7 @@ import { formatDateTime } from "../utils/date";
 import { useAuth } from "../context/AuthContext";
 import Icon from "../components/Icon";
 import SlotPicker from "../components/SlotPicker";
+import NoSlotAlternatives from "../components/NoSlotAlternatives";
 import AppointmentActions from "../components/AppointmentActions";
 import { SkeletonCards } from "../components/Skeleton";
 import { trackAppointment } from "../utils/analytics";
@@ -24,6 +25,9 @@ export default function ClientAppointments() {
   // Which of the patient's doctors (dentist, physio, …) this booking is with.
   const [reqDoctor, setReqDoctor] = useState("");
   const [reqDate, setReqDate] = useState("");
+  // Day the picker opens on, kept when the patient switches to another doctor
+  // from the "no free slot" suggestions.
+  const [reqDay, setReqDay] = useState("");
   // The slot the patient tapped — carries which kind of appointment that
   // bracket runs, so the request is booked as that type at its own length.
   const [reqSlot, setReqSlot] = useState(null);
@@ -65,6 +69,7 @@ export default function ClientAppointments() {
     setReqDoctor(doctors[0]?._id || "");
     setReqSlot(null);
     setReqDate("");
+    setReqDay("");
     setReqReason("");
     setReqError("");
     setReqSent(false);
@@ -240,11 +245,26 @@ export default function ClientAppointments() {
               <SlotPicker
                 key={reqDoctorObj?._id || "doctor"}
                 myDoctorId={reqDoctorObj?._id}
+                initialDay={reqDay || undefined}
                 value={reqDate}
                 onChange={(iso, slot) => {
                   setReqDate(iso);
                   setReqSlot(slot);
                 }}
+                renderNoSlots={({ day, setDay }) => (
+                  <NoSlotAlternatives
+                    doctorId={reqDoctorObj?._id}
+                    doctorName={reqDoctorObj?.name}
+                    day={day}
+                    onPickDay={setDay}
+                    onPickDoctor={(d, onDay) => {
+                      setReqDay(onDay);
+                      setReqDoctor(d._id);
+                      setReqDate("");
+                      setReqSlot(null);
+                    }}
+                  />
+                )}
               />
               <div className="row gap">
                 <button type="submit" className="icon" disabled={reqBusy}>

@@ -59,6 +59,8 @@ const fmtLen = (mins) => {
 //    that doctor's slots through the patient's own (authorised) endpoint.
 //  - availabilityOverride: use this availability array instead of the fetched one.
 //  - readOnly: display availability only — slots aren't selectable.
+//  - renderNoSlots({ day, setDay }): extra help shown when the day has no free
+//    slot at all (closed, on leave, or fully booked), e.g. other doctors.
 export default function SlotPicker({
   value,
   onChange,
@@ -70,6 +72,7 @@ export default function SlotPicker({
   readOnly = false,
   initialDay,
   allowPast = false, // when editing a passed appointment, don't block past days
+  renderNoSlots,
 }) {
   const valueDate = value ? new Date(value) : null;
   // Pre-select a day (e.g. "Add" tapped on a day header) without picking a time,
@@ -197,6 +200,12 @@ export default function SlotPicker({
   const selectedMin =
     valueDate && clinicDayStr(valueDate) === day ? clinicMinutes(valueDate) : null;
   const now = Date.now();
+  // Open, but every slot is taken or already past.
+  const fullyBooked =
+    !isClosed &&
+    Array.isArray(slots) &&
+    slots.every((sl) => isTaken(sl) || clinicToInstant(day, sl.start).getTime() < now);
+  const noFreeSlot = !loading && !(loadError && !availabilityOverride) && (isClosed || fullyBooked);
 
   const pick = (slot) => {
     onChange(clinicToInstant(day, slot.start).toISOString(), slot);
@@ -352,7 +361,7 @@ export default function SlotPicker({
             </strong>
             {leave?.reason && <> {leave.reason}.</>}
           </p>
-          {nextOpen && (
+          {nextOpen && !renderNoSlots && (
             <button type="button" className="btn-secondary icon" onClick={() => setDay(nextOpen)}>
               <Icon name="event_available" size={18} /> Next open day: {fmtDay(nextOpen)}
             </button>
@@ -370,6 +379,10 @@ export default function SlotPicker({
           </div>
         ))
       )}
+      {fullyBooked && !loading && (
+        <p className="muted" style={{ margin: "8px 0 0" }}>No free slots left on this day.</p>
+      )}
+      {noFreeSlot && renderNoSlots && renderNoSlots({ day, setDay })}
     </div>
   );
 }
