@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import "../styles/admin.css";
+import AdminClinics from "./AdminClinics";
 
 const fmt = (d) => new Date(d).toLocaleString();
 const shortUA = (ua = "") => {
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [hours, setHours] = useState(24);
-  const [tab, setTab] = useState("logins"); // logins | users | enrollments | invoices
+  const [tab, setTab] = useState("logins"); // logins | users | enrollments | invoices | clinics
   const [successFilter, setSuccessFilter] = useState("all"); // all | true | false
   const [summary, setSummary] = useState(null);
   const [events, setEvents] = useState([]);
@@ -71,6 +72,8 @@ export default function AdminDashboard() {
         setInvoices(inv.data.invoices || []);
         setDefaultFee(inv.data.defaultFee || 0);
         setClinics(enr.data.clinics || []);
+      } else if (tab === "clinics") {
+        // The Clinics tab loads its own data.
       } else {
         const p = new URLSearchParams({ limit: "1000" });
         if (userPwa !== "all") p.set("pwa", userPwa);
@@ -180,6 +183,9 @@ export default function AdminDashboard() {
             </button>
             <button className={tab === "invoices" ? "tab on" : "tab"} onClick={() => setTab("invoices")}>
               Invoices
+            </button>
+            <button className={tab === "clinics" ? "tab on" : "tab"} onClick={() => setTab("clinics")}>
+              Clinics
             </button>
           </div>
           <label className="row">
@@ -415,6 +421,8 @@ export default function AdminDashboard() {
             </table>
           </div>
         )}
+
+        {tab === "clinics" && <AdminClinics />}
 
         {tab === "invoices" && (
           <div style={{ display: "grid", gap: 16 }}>
