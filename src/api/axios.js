@@ -7,7 +7,10 @@ import { API_BASE_URL } from "../config/env";
 // still ignores any VITE_API_URL, so a stray build-time override can't repoint a
 // deployed app at another host and get blocked by the CSP. Dev is unchanged and
 // still honours VITE_API_URL (or localhost).
-const api = axios.create({ baseURL: API_BASE_URL });
+// The timeout stops a request on a stalled connection from hanging forever. It
+// is long enough to ride out a Render cold start; slow calls (uploads, PDFs)
+// pass their own.
+const api = axios.create({ baseURL: API_BASE_URL, timeout: 30000 });
 
 // True when the app is running as an installed PWA (standalone), not a browser tab.
 const isStandalone = () =>

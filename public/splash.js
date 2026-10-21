@@ -24,6 +24,19 @@
       setTimeout(function () { if (s) s.remove(); }, 450);
     }, 200);
   };
-  // Safety: never let the splash hang forever
-  setTimeout(function () { window.finishSplash(); }, 8000);
+  // The app calls finishSplash() itself once it has started (AuthContext gives
+  // up on a slow session check after 12s). If it still hasn't after 15s, the
+  // app code itself didn't load, so offer a reload instead of a blank screen.
+  setTimeout(function () {
+    if (window.__splashDone) return;
+    var slow = document.getElementById("splash-slow");
+    var reload = document.getElementById("splash-reload");
+    if (reload) reload.addEventListener("click", function () { location.reload(); });
+    if (slow) slow.hidden = false;
+  }, 15000);
+  // Safety: if the app did render but never handed over, don't cover it.
+  setTimeout(function () {
+    var root = document.getElementById("root");
+    if (root && root.childElementCount > 0) window.finishSplash();
+  }, 25000);
 })();

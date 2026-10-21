@@ -81,6 +81,27 @@
         color: #6480a6;
         font-variant-numeric: tabular-nums;
       }
+      #splash-slow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #6480a6;
+      }
+      #splash-slow[hidden] { display: none; }
+      #splash-reload {
+        padding: 9px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #3a72e3;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
     </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -104,6 +125,10 @@
         <div class="splash-name">MyMedin</div>
         <div class="splash-track"><div id="splash-bar"></div></div>
         <div id="splash-pct">0%</div>
+        <div id="splash-slow" hidden>
+          <span>This is taking longer than usual. Check your internet connection.</span>
+          <button type="button" id="splash-reload">Reload</button>
+        </div>
       </div>
     </div>
     <script src="/splash.js"></script>

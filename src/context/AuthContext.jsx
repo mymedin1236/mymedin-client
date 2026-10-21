@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
+import ConnectionError from "../components/ConnectionError";
 import { identify, resetAnalytics, trackLogIn, trackLogOut, trackSignUp } from "../utils/analytics";
 
 const AuthContext = createContext(null);
@@ -15,8 +16,12 @@ export const AuthProvider = ({ children }) => {
     return raw ? JSON.parse(raw) : null;
   });
   const [loading, setLoading] = useState(true);
+  // The session couldn't be checked (no connection) and there's no cached user
+  // to start from, so the app shows a "try again" screen instead of hanging.
+  const [connectError, setConnectError] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
-  useEffect(() => {
+  const checkSession = useCallback(() => {
     // Hand the splash screen over to the app once bootstrap completes
     const done = () => {
       setLoading(false);
@@ -25,11 +30,18 @@ export const AuthProvider = ({ children }) => {
     const viewToken = sessionStorage.getItem("viewToken");
     const token = viewToken || localStorage.getItem("token");
     if (!token) {
+      setConnectError(false);
       done();
       return;
     }
+    // With a cached user the app opens straight away and the session is checked
+    // in the background, so a slow or dropped connection never holds it on the
+    // splash screen.
+    const cached = viewToken ? sessionStorage.getItem("viewUser") : localStorage.getItem("user");
+    if (cached) done();
+    setRetrying(true);
     api
-      .get("/auth/me")
+      .get("/auth/me", { timeout: 12000, skipLoader: !!cached })
       .then((r) => {
         setUser(r.data.user);
         if (viewToken) {
@@ -38,20 +50,42 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("user", JSON.stringify(r.data.user));
         }
         identify(r.data.user);
+        setConnectError(false);
       })
-      .catch(() => {
-        if (viewToken) {
-          sessionStorage.removeItem("viewToken");
-          sessionStorage.removeItem("viewAs");
-          sessionStorage.removeItem("viewUser");
-        } else {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+      .catch((err) => {
+        // Only a 401 means the session is gone. A timeout or network error
+        // keeps the user signed in.
+        if (err.response?.status === 401) {
+          if (viewToken) {
+            sessionStorage.removeItem("viewToken");
+            sessionStorage.removeItem("viewAs");
+            sessionStorage.removeItem("viewUser");
+          } else {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+          }
+          setUser(null);
+          setConnectError(false);
+        } else if (!cached) {
+          setConnectError(true);
         }
-        setUser(null);
       })
-      .finally(done);
+      .finally(() => {
+        setRetrying(false);
+        done();
+      });
   }, []);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
+  // Retry on its own as soon as the device comes back online.
+  useEffect(() => {
+    if (!connectError) return;
+    window.addEventListener("online", checkSession);
+    return () => window.removeEventListener("online", checkSession);
+  }, [connectError, checkSession]);
 
   const login = async (identifier, password, remember = true) => {
     const { data } = await api.post("/auth/login", { identifier, password, remember });
@@ -89,7 +123,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
-      {children}
+      {connectError ? <ConnectionError onRetry={checkSession} retrying={retrying} /> : children}
     </AuthContext.Provider>
   );
 };

@@ -83,7 +83,7 @@ export default function AvatarUpload({ value, name = "", onChange, centered = fa
     setError("");
     try {
       const dataUrl = await getCroppedDataUrl(rawImage, croppedPixels);
-      const { data } = await api.post("/uploads/avatar", { image: dataUrl }, { skipLoader: true });
+      const { data } = await api.post("/uploads/avatar", { image: dataUrl }, { skipLoader: true, timeout: 90000 });
       onChange?.(data.url);
       setRawImage(null);
     } catch (err) {

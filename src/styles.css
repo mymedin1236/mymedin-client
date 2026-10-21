@@ -807,6 +807,14 @@ button.password-toggle:hover:not(:disabled) { background: transparent; color: va
   font-size: 18px;
 }
 .fsl-brand .material-symbols-outlined { color: var(--primary); }
+.connection-error {
+  max-width: 320px;
+  padding: 0 16px;
+  text-align: center;
+  gap: 12px;
+}
+.connection-error-icon { color: var(--muted); }
+.connection-error-text { margin: 0 0 6px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 
 /* --- Skeleton placeholders --- */
 .skeleton {

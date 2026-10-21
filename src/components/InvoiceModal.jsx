@@ -48,7 +48,7 @@ export default function InvoiceModal({ client, treatment, onClose }) {
   useEffect(() => {
     let url;
     api
-      .get(`/treatments/invoice/${client._id}`, { params, responseType: "blob" })
+      .get(`/treatments/invoice/${client._id}`, { params, responseType: "blob", timeout: 90000 })
       .then(({ data }) => {
         const blob = new Blob([data], { type: "application/pdf" });
         url = URL.createObjectURL(blob);
