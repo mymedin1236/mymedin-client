@@ -3,11 +3,9 @@ import api from "../api/axios";
 import { formatDateTime } from "../utils/date";
 import { useAuth } from "../context/AuthContext";
 import Icon from "../components/Icon";
-import SlotPicker from "../components/SlotPicker";
-import NoSlotAlternatives from "../components/NoSlotAlternatives";
 import AppointmentActions from "../components/AppointmentActions";
 import { SkeletonCards } from "../components/Skeleton";
-import { trackAppointment } from "../utils/analytics";
+import RequestAppointment, { RequestSentNote, allDoctorsBooked } from "../components/RequestAppointment";
 
 const statusLabel = (s) =>
   s === "pending" ? "Awaiting confirmation" : s === "no_show" ? "No-show" : s;
@@ -21,21 +19,7 @@ export default function ClientAppointments() {
 
   // Request a new appointment
   const [showRequest, setShowRequest] = useState(false);
-  const [reqFor, setReqFor] = useState(""); // "" = myself, else dependent id
-  // Which of the patient's doctors (dentist, physio, …) this booking is with.
-  const [reqDoctor, setReqDoctor] = useState("");
-  const [reqDate, setReqDate] = useState("");
-  // Day the picker opens on, kept when the patient switches to another doctor
-  // from the "no free slot" suggestions.
-  const [reqDay, setReqDay] = useState("");
-  // The slot the patient tapped — carries which kind of appointment that
-  // bracket runs, so the request is booked as that type at its own length.
-  const [reqSlot, setReqSlot] = useState(null);
-  const [reqReason, setReqReason] = useState("");
-  const [reqError, setReqError] = useState("");
-  const [reqBusy, setReqBusy] = useState(false);
-  // null until a booking goes through, then { autoConfirmed } — the clinic may
-  // confirm on the spot, in which case there is nothing to wait for.
+  // null until a booking goes through, then { autoConfirmed }.
   const [reqSent, setReqSent] = useState(null);
 
   const loadAppointments = () =>
@@ -62,59 +46,8 @@ export default function ClientAppointments() {
 
   // Every doctor the patient is with; older servers only send `doctor`.
   const doctors = assoc?.doctors || (assoc?.doctor ? [assoc.doctor] : []);
-  const reqDoctorObj = doctors.find((d) => d._id === reqDoctor) || doctors[0];
 
-  const openRequest = () => {
-    setReqFor("");
-    setReqDoctor(doctors[0]?._id || "");
-    setReqSlot(null);
-    setReqDate("");
-    setReqDay("");
-    setReqReason("");
-    setReqError("");
-    setReqSent(false);
-    setShowRequest(true);
-  };
-
-  const submitRequest = async (e) => {
-    e.preventDefault();
-    setReqError("");
-    if (!reqDate) return setReqError("Please pick a time slot.");
-    setReqBusy(true);
-    try {
-      const { data } = await api.post("/appointments/request", {
-        date: reqDate,
-        reason: reqReason,
-        for: reqFor || undefined,
-        doctorId: reqDoctorObj?._id,
-        appointmentType: reqSlot?.typeId || undefined,
-      });
-      const autoConfirmed = !!data?.autoConfirmed;
-      trackAppointment(autoConfirmed ? "booked" : "requested", { doctor_id: reqDoctorObj?._id });
-      setShowRequest(false);
-      setReqSent({ autoConfirmed });
-      await loadAppointments();
-    } catch (err) {
-      setReqError(err.response?.data?.message || "Could not send request.");
-    } finally {
-      setReqBusy(false);
-    }
-  };
-
-  // Hide "Request appointment" once the patient already has an active appointment
-  // (pending or upcoming) with EVERY one of their doctors. Guardians with
-  // dependents keep it so they can still book for a child. The server also
-  // blocks same-day double-booking.
-  const now = Date.now();
-  const hasActiveWith = (doctorId) =>
-    appointments.some(
-      (a) =>
-        a.client?._id === user._id &&
-        (a.doctor?._id || a.doctor) === doctorId &&
-        ["pending", "scheduled"].includes(a.status) &&
-        new Date(a.date).getTime() >= now
-    );
-  const hideRequest = doctors.length > 0 && doctors.every((d) => hasActiveWith(d._id)) && deps.length === 0;
+  const hideRequest = allDoctorsBooked({ appointments, doctors, deps, userId: user._id });
 
   return (
     <div className="page">
@@ -126,29 +59,16 @@ export default function ClientAppointments() {
               <Icon name="event_available" size={18} /> Appointment already scheduled
             </span>
           ) : (
-            <button className="icon" onClick={openRequest}>
+            <button className="icon" onClick={() => {
+              setReqSent(null);
+              setShowRequest(true);
+            }}>
               <Icon name="event" size={18} /> Request appointment
             </button>
           ))}
       </div>
 
-      {reqSent && (
-        <div className="card" style={{ maxWidth: "none", borderColor: "var(--primary)" }}>
-          <p className="icon" style={{ margin: 0 }}>
-            {reqSent.autoConfirmed ? (
-              <>
-                <Icon name="event_available" size={18} /> Appointment confirmed — it's in the
-                clinic's diary. We've sent you the details.
-              </>
-            ) : (
-              <>
-                <Icon name="schedule_send" size={18} /> Request sent — you'll be notified once your
-                doctor confirms.
-              </>
-            )}
-          </p>
-        </div>
-      )}
+      {reqSent && <RequestSentNote autoConfirmed={reqSent.autoConfirmed} />}
 
       {loading ? (
         <SkeletonCards count={4} />
@@ -189,94 +109,16 @@ export default function ClientAppointments() {
       )}
 
       {showRequest && (
-        <div className="modal-backdrop" onClick={() => setShowRequest(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={submitRequest} style={{ display: "contents" }}>
-              <div className="modal-head">
-                <h3 className="icon"><Icon name="event" size={18} /> Request an appointment</h3>
-                <button type="button" className="modal-close" aria-label="Close" onClick={() => setShowRequest(false)}>
-                  <Icon name="close" />
-                </button>
-              </div>
-              <p className="muted" style={{ margin: 0 }}>
-                Pick an available slot with Dr. {reqDoctorObj?.name}. They'll confirm your request.
-              </p>
-              {reqError && <div className="error">{reqError}</div>}
-              {doctors.length > 1 && (
-                <label>
-                  <span className="lbl">Which doctor?</span>
-                  <select
-                    value={reqDoctorObj?._id || ""}
-                    onChange={(e) => {
-                      setReqDoctor(e.target.value);
-                      // The old slot belongs to the other doctor's diary.
-                      setReqDate("");
-                      setReqSlot(null);
-                    }}
-                  >
-                    {doctors.map((d) => (
-                      <option key={d._id} value={d._id}>
-                        Dr. {d.name}
-                        {d.specialization ? ` · ${d.specialization}` : d.clinicName ? ` · ${d.clinicName}` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              {deps.length > 0 && (
-                <label>
-                  <span className="lbl">Who is this for?</span>
-                  <select value={reqFor} onChange={(e) => setReqFor(e.target.value)}>
-                    <option value="">Myself</option>
-                    {deps.map((d) => (
-                      <option key={d._id} value={d._id}>{d.name}</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              <label>
-                <span className="lbl">Purpose <span className="muted">(optional)</span></span>
-                <input
-                  placeholder="e.g. Checkup, Toothache"
-                  value={reqReason}
-                  onChange={(e) => setReqReason(e.target.value)}
-                />
-              </label>
-              <SlotPicker
-                key={reqDoctorObj?._id || "doctor"}
-                myDoctorId={reqDoctorObj?._id}
-                initialDay={reqDay || undefined}
-                value={reqDate}
-                onChange={(iso, slot) => {
-                  setReqDate(iso);
-                  setReqSlot(slot);
-                }}
-                renderNoSlots={({ day, setDay }) => (
-                  <NoSlotAlternatives
-                    doctorId={reqDoctorObj?._id}
-                    doctorName={reqDoctorObj?.name}
-                    day={day}
-                    onPickDay={setDay}
-                    onPickDoctor={(d, onDay) => {
-                      setReqDay(onDay);
-                      setReqDoctor(d._id);
-                      setReqDate("");
-                      setReqSlot(null);
-                    }}
-                  />
-                )}
-              />
-              <div className="row gap">
-                <button type="submit" className="icon" disabled={reqBusy}>
-                  <Icon name="schedule_send" size={18} /> {reqBusy ? "Sending…" : "Send request"}
-                </button>
-                <button type="button" className="btn-secondary" onClick={() => setShowRequest(false)}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <RequestAppointment
+          doctors={doctors}
+          deps={deps}
+          onClose={() => setShowRequest(false)}
+          onSent={(sent) => {
+            setShowRequest(false);
+            setReqSent(sent);
+            loadAppointments();
+          }}
+        />
       )}
     </div>
   );

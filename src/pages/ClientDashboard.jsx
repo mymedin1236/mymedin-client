@@ -7,6 +7,7 @@ import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import StarRating from "../components/StarRating";
 import AppointmentActions from "../components/AppointmentActions";
+import RequestAppointment, { RequestSentNote, allDoctorsBooked } from "../components/RequestAppointment";
 import { clinicToday, clinicDow, clinicMinutes } from "../utils/clinicTime";
 import { bracketsForDay, closedRunAround, nextOpenDay } from "../utils/slots";
 
@@ -56,7 +57,8 @@ const clinicStatus = (doctor) => {
   return { kind: "soon", icon: "schedule", text: `Opens in ${inText} (${fmt12(minToHHMM(next.start))})` };
 };
 
-// Patient "Home" tab. Three sections: (1) scheduled appointment, (2) payments /
+// Patient "Home" tab. Three sections: (1) scheduled appointment, with the
+// "Request appointment" button (most patients never open the Appointments tab), (2) payments /
 // outstanding balance, (3) review your doctor.
 export default function ClientDashboard() {
   const { user } = useAuth();
@@ -69,6 +71,9 @@ export default function ClientDashboard() {
   const [leaveComment, setLeaveComment] = useState("");
   const [leaving, setLeaving] = useState(false);
   const [assocNotice, setAssocNotice] = useState("");
+  const [deps, setDeps] = useState([]); // family members the patient can book for
+  const [showRequest, setShowRequest] = useState(false);
+  const [reqSent, setReqSent] = useState(null); // { autoConfirmed } after a booking
 
   const loadAssoc = () =>
     api.get("/associations/me").then((r) => setAssoc(r.data)).catch(() => {});
@@ -119,6 +124,7 @@ export default function ClientDashboard() {
     loadAssoc();
     loadUpcoming();
     loadBalance();
+    api.get("/family", { skipLoader: true }).then((r) => setDeps(r.data || [])).catch(() => {});
   }, []);
 
   // If the patient arrived via the public "Associate with this clinic" flow,
@@ -223,6 +229,20 @@ export default function ClientDashboard() {
   // Older servers send a single `doctor` / `pending`.
   const doctors = assoc?.doctors || (assoc?.doctor ? [{ ...assoc.doctor, myReview: assoc.myReview }] : []);
   const pendings = assoc?.pendings || (assoc?.pending ? [assoc.pending] : []);
+  const canRequest =
+    doctors.length > 0 && !allDoctorsBooked({ appointments: upcoming, doctors, deps, userId: user._id });
+
+  const requestButton = (
+    <button
+      className="icon"
+      onClick={() => {
+        setReqSent(null);
+        setShowRequest(true);
+      }}
+    >
+      <Icon name="event" size={18} /> Request appointment
+    </button>
+  );
 
   return (
     <div className="page">
@@ -241,13 +261,26 @@ export default function ClientDashboard() {
         <h2 className="icon" style={{ marginBottom: 8 }}>
           <Icon name="event_upcoming" /> Scheduled appointment{upcoming.length > 1 ? "s" : ""}
         </h2>
+        {reqSent && <RequestSentNote autoConfirmed={reqSent.autoConfirmed} />}
         {upcoming.length > 0 ? (
-          <div className="appt-list">{upcoming.map(renderAppointment)}</div>
+          <>
+            <div className="appt-list">{upcoming.map(renderAppointment)}</div>
+            {canRequest && <div className="row gap" style={{ marginTop: 10 }}>{requestButton}</div>}
+          </>
         ) : (
           <div className="card" style={{ maxWidth: "none" }}>
-            <p className="icon muted" style={{ margin: 0 }}>
-              <Icon name="event_busy" size={18} /> No scheduled appointments right now.
-            </p>
+            <div className="row gap" style={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+              <p className="icon muted" style={{ margin: 0 }}>
+                <Icon name="event_busy" size={18} /> No scheduled appointments right now.
+              </p>
+              {canRequest
+                ? requestButton
+                : assoc && !doctors.length && (
+                    <Link to="/find-doctor" className="btn-secondary icon" style={{ textDecoration: "none" }}>
+                      <Icon name="person_search" size={18} /> Find a doctor
+                    </Link>
+                  )}
+            </div>
           </div>
         )}
       </section>
@@ -344,6 +377,19 @@ export default function ClientDashboard() {
           </>
         )}
       </section>
+
+      {showRequest && (
+        <RequestAppointment
+          doctors={doctors}
+          deps={deps}
+          onClose={() => setShowRequest(false)}
+          onSent={(sent) => {
+            setShowRequest(false);
+            setReqSent(sent);
+            loadUpcoming();
+          }}
+        />
+      )}
 
       {leaveDoctor && (
         <div className="modal-backdrop" onClick={() => setLeaveDoctor(null)}>
