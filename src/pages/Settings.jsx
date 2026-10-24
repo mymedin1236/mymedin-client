@@ -36,6 +36,9 @@ export default function Settings() {
   // Also the doctor's call only — the server rejects an assistant (403).
   const [autoApprove, setAutoApprove] = useState(false);
   const [autoApproveBase, setAutoApproveBase] = useState(false);
+  // Assistant's number, added to the clinic's WhatsApp messages to patients.
+  const [assistantPhone, setAssistantPhone] = useState("");
+  const [assistantPhoneBase, setAssistantPhoneBase] = useState("");
   const [dayOverrides, setDayOverrides] = useState([]);
   const [dayOverridesBase, setDayOverridesBase] = useState([]);
   // Appointment types save themselves as they're edited (each is its own
@@ -101,6 +104,8 @@ export default function Settings() {
         setAutoConfirmBase(!!data.autoConfirmBookings);
         setAutoApprove(!!data.autoApproveAssociations);
         setAutoApproveBase(!!data.autoApproveAssociations);
+        setAssistantPhone(data.assistantPhone || "");
+        setAssistantPhoneBase(data.assistantPhone || "");
         setDayOverrides(data.dayOverrides || []);
         setDayOverridesBase(data.dayOverrides || []);
         setTypes(data.appointmentTypes || []);
@@ -163,6 +168,7 @@ export default function Settings() {
   const slotDirty = Number(slotDuration) !== Number(slotDurationBase);
   const approvalDirty = autoConfirm !== autoConfirmBase;
   const joinDirty = autoApprove !== autoApproveBase;
+  const assistantDirty = assistantPhone.trim() !== assistantPhoneBase;
   const overridesDirty = !eq(dayOverrides, dayOverridesBase);
   const locDirty = !eq(coords, coordsBase);
 
@@ -180,6 +186,11 @@ export default function Settings() {
     putSection("join", { autoApproveAssociations: autoApprove }, (data) =>
       setAutoApproveBase(!!data.autoApproveAssociations)
     );
+  const saveAssistant = () =>
+    putSection("assistant", { assistantPhone: assistantPhone.trim() }, (data) => {
+      setAssistantPhone(data.assistantPhone || "");
+      setAssistantPhoneBase(data.assistantPhone || "");
+    });
   const saveOverrides = () =>
     putSection("overrides", { dayOverrides }, (data) => {
       // The server prunes past-dated exceptions — reflect the cleaned list.
@@ -381,6 +392,28 @@ export default function Settings() {
               : " Patient requests wait for approval. Only the doctor can change this."}
           </p>
         )}
+      </div>
+
+      {/* Assistant's number, shared in WhatsApp messages to patients */}
+      <div className="card">
+        <h3 className="icon"><Icon name="support_agent" size={18} /> Assistant's number on WhatsApp</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          Added to every WhatsApp message the clinic sends a patient (reminders, booking
+          updates, receipts and invoices) as “Assistant to doctor: …”, so patients know
+          whom to call. Leave it empty to leave the line out.
+        </p>
+        <label style={{ maxWidth: 260 }}>
+          Assistant phone number
+          <input
+            type="tel"
+            inputMode="tel"
+            placeholder="e.g. 03001234567"
+            maxLength={20}
+            value={assistantPhone}
+            onChange={(e) => setAssistantPhone(e.target.value)}
+          />
+        </label>
+        {saveRow("assistant", assistantDirty, saveAssistant, () => setAssistantPhone(assistantPhoneBase))}
       </div>
 
       {/* Day-specific hours & time off */}
