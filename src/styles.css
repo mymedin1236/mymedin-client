@@ -52,13 +52,18 @@ h1, h2, h3, h4, .sidebar-brand a, .topbar-brand, .stat-value {
   line-height: 1.25;
 }
 
-/* Material Symbols icon font */
+/* Material Symbols icon font. Fixed 1em square so that, while the font is still
+   loading, the (invisible) ligature name can't widen the icon and shift inputs. */
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   font-weight: normal;
   font-style: normal;
   font-size: 20px;
   line-height: 1;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  flex: none;
   letter-spacing: normal;
   text-transform: none;
   display: inline-block;
@@ -70,6 +75,8 @@ h1, h2, h3, h4, .sidebar-brand a, .topbar-brand, .stat-value {
   vertical-align: middle;
   user-select: none;
 }
+/* Set by index.html until the icon font has loaded (see the script there). */
+html.icons-pending .material-symbols-outlined { color: transparent !important; }
 
 /* Inline icon: align with adjacent text */
 .icon {
