@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useNotifications } from "../context/NotificationsContext";
-import { ROLE_LINKS, decorateClientLinks } from "../navLinks";
+import { ROLE_LINKS, decorateClientLinks, promoteUnpaidInvoices } from "../navLinks";
 import Icon from "./Icon";
 import { trackTabViewed } from "../utils/analytics";
 
-// Pending-request counts shown as a badge on the matching nav tab.
-const badgeFor = (to, { associationRequests, appointmentRequests }) => {
+// Pending-request and unpaid-invoice counts shown as a badge on the matching nav tab.
+const badgeFor = (to, { associationRequests, appointmentRequests, unpaidInvoices }) => {
   if (to === "/clients") return associationRequests;
   if (to === "/appointments") return appointmentRequests;
+  if (to === "/invoices") return unpaidInvoices;
   return 0;
 };
 
@@ -17,8 +18,8 @@ const badgeFor = (to, { associationRequests, appointmentRequests }) => {
 // a right-edge chevron; tapping it nudges the bar along. Scroll is contained so
 // swiping the bar never triggers the browser's back/forward gesture.
 export default function MobileNav({ role, myDoctorId }) {
-  const { associationRequests, appointmentRequests } = useNotifications() || {};
-  const links = decorateClientLinks(ROLE_LINKS[role] || [], myDoctorId);
+  const { associationRequests, appointmentRequests, unpaidInvoices } = useNotifications() || {};
+  const links = promoteUnpaidInvoices(decorateClientLinks(ROLE_LINKS[role] || [], myDoctorId), unpaidInvoices);
   const scrollRef = useRef(null);
   const [less, setLess] = useState(false); // more tabs to the left
   const [more, setMore] = useState(false); // more tabs to the right
@@ -53,7 +54,7 @@ export default function MobileNav({ role, myDoctorId }) {
       )}
       <nav className="mobile-nav" ref={scrollRef}>
         {links.map((l) => {
-          const count = badgeFor(l.to, { associationRequests, appointmentRequests });
+          const count = badgeFor(l.to, { associationRequests, appointmentRequests, unpaidInvoices });
           return (
             <NavLink
               key={l.to}

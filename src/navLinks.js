@@ -37,6 +37,15 @@ export const ROLE_LINKS = {
   vendor: [{ to: "/vendor", icon: "storefront", label: "My Store" }],
 };
 
+// While the doctor has an unpaid invoice, the "Invoices" tab moves to second
+// place so it's visible on the mobile bar without scrolling. Paid → back in place.
+export const promoteUnpaidInvoices = (links, unpaidInvoices) => {
+  const i = links.findIndex((l) => l.to === "/invoices");
+  if (!unpaidInvoices || i <= 1) return links;
+  const rest = links.filter((_, j) => j !== i);
+  return [rest[0], links[i], ...rest.slice(1)];
+};
+
 // When a patient is associated, the "Find a doctor" tab becomes "My doctor"
 // and points to their doctor's profile.
 export const decorateClientLinks = (links, myDoctorId) =>

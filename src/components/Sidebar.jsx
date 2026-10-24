@@ -5,16 +5,17 @@ import { ROLE_LINKS, decorateClientLinks } from "../navLinks";
 import Icon from "./Icon";
 import { trackTabViewed } from "../utils/analytics";
 
-// Pending-request counts shown as a badge on the matching nav tab.
-const badgeFor = (to, { associationRequests, appointmentRequests }) => {
+// Pending-request and unpaid-invoice counts shown as a badge on the matching nav tab.
+const badgeFor = (to, { associationRequests, appointmentRequests, unpaidInvoices }) => {
   if (to === "/clients") return associationRequests;
   if (to === "/appointments") return appointmentRequests;
+  if (to === "/invoices") return unpaidInvoices;
   return 0;
 };
 
 export default function Sidebar({ open, onNavigate, myDoctorId }) {
   const { user } = useAuth();
-  const { associationRequests, appointmentRequests } = useNotifications() || {};
+  const { associationRequests, appointmentRequests, unpaidInvoices } = useNotifications() || {};
   if (!user) return null;
 
   const links = decorateClientLinks(ROLE_LINKS[user.role] || [], myDoctorId);
@@ -30,7 +31,7 @@ export default function Sidebar({ open, onNavigate, myDoctorId }) {
 
       <nav className="sidebar-nav">
         {links.map((l) => {
-          const count = badgeFor(l.to, { associationRequests, appointmentRequests });
+          const count = badgeFor(l.to, { associationRequests, appointmentRequests, unpaidInvoices });
           return (
             <NavLink
               key={l.to}
